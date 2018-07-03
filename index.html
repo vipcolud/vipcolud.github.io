@@ -252,6 +252,158 @@
   
   
   <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="www.belongapp.fun/2018/07/03/git/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="BELONG">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="BELONG's Blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2018/07/03/git/" itemprop="url">git</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-07-03T09:04:48+08:00">
+                2018-07-03
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category" >
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/git/" itemprop="url" rel="index">
+                    <span itemprop="name">git</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <p>git是分布式仓库</p>
+<ol>
+<li>创建版本库<br>mkdir repo      //创建repo目录<br>cd repo         //进入repo<br>pwd             //显示当前目录<br>git init        //初始化仓库<br>git add .       //添加所有文件进入仓库(命令实际上就是把要提交的所有修改放到暂存区Stage)<br>git status      //提交前查看状态<br>git commit -m “”//提交并加注释(把暂存区的所有修改提交到分支)</li>
+<li>时光机穿梭<br>git log         //查看历史修改记录<br>git log –pretty=oneline//添加参数可以简洁的查看git修改记录<br>git reset –hard head^ //回到上个版本<br>git reset –hard 3fee3fe4aba //再回到原版本   id号必须在命令号上找到<br><strong>git reflog</strong>       //查看命令历史<br>git checkout – file //直接丢弃工作区的修改<br>git reset HEAD file  git checkout – file//修改错误放到了暂存区</li>
+</ol>
+<p><strong>Git是如何跟踪修改的，每次修改，如果不add到暂存区，那就不会加入到commit中。</strong><br>rm //删除文件 git checkout – test.txt//一键还原</p>
+<p>github如果已经存在一个非空仓库，本地也存在一个非空仓库，需要提交本地到github需要合并<br>本地仓库和github仓库：git pull –rebase origin master 然后再提交：git push -u origin master</p>
+<ol>
+<li>分支<br>git branch dev      //创建分支<br>git checkout dev    //切换分支<br>git checkout -b dev //创建并切换<br>git branch          //查看分支<br>git merge dev       //合并dev到master<br>git branch -d       //删除分支<br>(1). 当Git无法自动合并分支时，就必须首先解决冲突。解决冲突后，再提交，合并完成。+</li>
+</ol>
+<p>用git log –graph命令可以看到分支合并图。<br>(2). 修复bug时，我们会通过创建新的bug分支进行修复，然后合并，最后删除；<br>当手头工作没有完成时，先把工作现场git stash隐藏一下，然后新建bug分支去修复bug，修复后，再git stash pop，回到工作现场。</p>
+
+          
+        
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
     <link itemprop="mainEntityOfPage" href="www.belongapp.fun/2018/06/26/多线程/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -1565,155 +1717,6 @@
 
 
     
-      
-
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="www.belongapp.fun/2018/01/01/Redis缓存与Memcached的比较/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="BELONG">
-      <meta itemprop="description" content="">
-      <meta itemprop="image" content="/images/avatar.gif">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="BELONG's Blog">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                <a class="post-title-link" href="/2018/01/01/Redis缓存与Memcached的比较/" itemprop="url">Redis缓存与Memcached的比较</a></h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-01-01T22:36:55+08:00">
-                2018-01-01
-              </time>
-            
-
-            
-
-            
-          </span>
-
-          
-            <span class="post-category" >
-            
-              <span class="post-meta-divider">|</span>
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">分类于</span>
-              
-              
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/缓存/" itemprop="url" rel="index">
-                    <span itemprop="name">缓存</span>
-                  </a>
-                </span>
-
-                
-                
-              
-            </span>
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          <p>1：Memcached</p>
-<p>Memcached是一个高性能的分布式内存对象缓存系统，用于动态Web应用以减轻数据库负载. 它通过在内存中缓存数据和对象来减少读取数据库的次数，从而提升网站的访问速度.Memcached基于一个存储键/值对的hashmap。</p>
-<p>2：Redis</p>
-<p>Redis是一个key-value存储系统，和Memcached类似。但是它支持存储的value类型相对更多，包括string(字符串)、 list(链表)、set(集合)、zset(sorted set –有序集合)和hashs（哈希类型）。这些数据类型都支持push/pop、add/remove及取交集并集和差集及更丰富的操作，而且这些操作都 是原子性的。在此基础上，redis支持各种不同方式的排序。与memcached一样，为了保证效率，数据都是缓存在内存中。区别的是redis会周期 性的把更新的数据写入磁盘或者把修改操作写入追加的记录文件，并且在此基础上实现了master-slave(主从)同步。<br>Redis是一个高性能的key-value数据库。redis的出现，很大程度补偿了memcached这类key/value存储的不足，在部 分场合可以对关系数据库起到很好的补充作用。它提供了Python，Ruby，Erlang，PHP客户端，使用很方便.<br>
-          <!--noindex-->
-          <div class="post-button text-center">
-            <a class="btn" href="/2018/01/01/Redis缓存与Memcached的比较/#more" rel="contents">
-              阅读全文 &raquo;
-            </a>
-          </div>
-          <!--/noindex-->
-        
-      
-    </div>
-    
-    
-    
-
-    
-
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
   </section>
 
   
@@ -1768,7 +1771,7 @@
               
                 <a href="/archives/">
               
-                  <span class="site-state-item-count">18</span>
+                  <span class="site-state-item-count">19</span>
                   <span class="site-state-item-name">日志</span>
                 </a>
               </div>
