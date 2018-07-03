@@ -86,7 +86,7 @@
 <meta property="og:site_name" content="BELONG&#39;s Blog">
 <meta property="og:description" content="git是分布式仓库  创建版本库mkdir repo      //创建repo目录cd repo         //进入repopwd             //显示当前目录git init        //初始化仓库git add .       //添加所有文件进入仓库(命令实际上就是把要提交的所有修改放到暂存区Stage)git status      //提交前查看状态git co">
 <meta property="og:locale" content="zh-Hans">
-<meta property="og:updated_time" content="2018-07-03T07:54:23.208Z">
+<meta property="og:updated_time" content="2018-07-03T08:02:21.571Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="git">
 <meta name="twitter:description" content="git是分布式仓库  创建版本库mkdir repo      //创建repo目录cd repo         //进入repopwd             //显示当前目录git init        //初始化仓库git add .       //添加所有文件进入仓库(命令实际上就是把要提交的所有修改放到暂存区Stage)git status      //提交前查看状态git co">
@@ -343,13 +343,16 @@
       
         <p>git是分布式仓库</p>
 <ol>
-<li>创建版本库<br>mkdir repo      //创建repo目录<br>cd repo         //进入repo<br>pwd             //显示当前目录<br>git init        //初始化仓库<br>git add .       //添加所有文件进入仓库(命令实际上就是把要提交的所有修改放到暂存区Stage)<br>git status      //提交前查看状态<br>git commit -m “”//提交并加注释(把暂存区的所有修改提交到分支)</li>
-<li>时光机穿梭<br>git log         //查看历史修改记录<br>git log –pretty=oneline//添加参数可以简洁的查看git修改记录<br>git reset –hard head^ //回到上个版本<br>git reset –hard 3fee3fe4aba //再回到原版本   id号必须在命令号上找到<br><strong>git reflog</strong>       //查看命令历史<br>git checkout – file //直接丢弃工作区的修改<br>git reset HEAD file  git checkout – file//修改错误放到了暂存区</li>
-</ol>
+<li><p>创建版本库<br>mkdir repo      //创建repo目录<br>cd repo         //进入repo<br>pwd             //显示当前目录<br>git init        //初始化仓库<br>git add .       //添加所有文件进入仓库(命令实际上就是把要提交的所有修改放到暂存区Stage)<br>git status      //提交前查看状态<br>git commit -m “”//提交并加注释(把暂存区的所有修改提交到分支)</p>
+</li>
+<li><p>时光机穿梭<br>git log         //查看历史修改记录<br>git log –pretty=oneline//添加参数可以简洁的查看git修改记录<br>git reset –hard head^ //回到上个版本<br>git reset –hard 3fee3fe4aba //再回到原版本   id号必须在命令号上找到<br><strong>git reflog</strong>       //查看命令历史<br>git checkout – file //直接丢弃工作区的修改<br>git reset HEAD file  git checkout – file//修改错误放到了暂存区</p>
+<a id="more"></a>
 <p><strong>Git是如何跟踪修改的，每次修改，如果不add到暂存区，那就不会加入到commit中。</strong><br>rm //删除文件 git checkout – test.txt//一键还原</p>
+</li>
+</ol>
 <p>github如果已经存在一个非空仓库，本地也存在一个非空仓库，需要提交本地到github需要合并<br>本地仓库和github仓库：git pull –rebase origin master 然后再提交：git push -u origin master</p>
 <ol>
-<li>分支<br>git branch dev      //创建分支<br>git checkout dev    //切换分支<br>git checkout -b dev //创建并切换<br>git branch          //查看分支<br>git merge dev       //合并dev到master<br>git branch -d       //删除分支<br>(1). 当Git无法自动合并分支时，就必须首先解决冲突。解决冲突后，再提交，合并完成。+</li>
+<li>分支<br>git branch dev      //创建分支<br>git checkout dev    //切换分支<br>git checkout -b dev //创建并切换<br>git branch          //查看分支<br>git merge dev       //合并dev到master<br>git branch -d       //删除分支<br>(1). 当Git无法自动合并分支时，就必须首先解决冲突。解决冲突后，再提交，合并完成。</li>
 </ol>
 <p>用git log –graph命令可以看到分支合并图。<br>(2). 修复bug时，我们会通过创建新的bug分支进行修复，然后合并，最后删除；<br>当手头工作没有完成时，先把工作现场git stash隐藏一下，然后新建bug分支去修复bug，修复后，再git stash pop，回到工作现场。</p>
 
