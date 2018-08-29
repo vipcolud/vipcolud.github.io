@@ -10,11 +10,11 @@
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="google" content="notranslate" />
-    <meta name="keywords" content="belongapp,">
-    <meta name="description" content="专注于后端开发,">
-    <meta name="author" content="BELONG">
-    <link rel="alternative" href="atom.xml" title="BELONG&#39;s Blog" type="application/atom+xml">
-    <link rel="icon" href="/img/favicon.png">
+    <meta name="keywords" content="belongapp,"> 
+    <meta name="description" content="专注于后端开发,"> 
+    <meta name="author" content="BELONG"> 
+    <link rel="alternative" href="atom.xml" title="BELONG&#39;s Blog" type="application/atom+xml"> 
+    <link rel="icon" href="/img/favicon.png"> 
     <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.css">
     <link rel="stylesheet" href="/css/diaspora.css">
 
@@ -76,7 +76,7 @@
 
 <body>
     <div class="content">
-        <h2>小兔子，我已经喜欢你</h2>
+        <h2>小傻子，我们在一起</h2>
         <div class="timer">
             <b id="d"></b> 天 <b id="h"></b> 小时 <b id="m"></b> 分钟 <b id="s"></b> 秒
         </div>
@@ -84,8 +84,9 @@
 
     <script>
         function timer() {
-            var start = new Date(2018, 1, 1); // 2015.7.2
+            var start = new Date(2018, 07, 01); // 2015.7.2
             var t = new Date() - start;
+            console.log(new Date(2018, 08, 01))
             var h = ~~(t / 1000 / 60 / 60 % 24);
             if (h < 10) {
                 h = "0" + h;
@@ -127,12 +128,12 @@
 
 <!-- Root element of PhotoSwipe. Must have class pswp. -->
 <div class="pswp" tabindex="-1" role="dialog" aria-hidden="true">
-    <!-- Background of PhotoSwipe.
+    <!-- Background of PhotoSwipe. 
          It's a separate element as animating opacity is faster than rgba(). -->
     <div class="pswp__bg"></div>
     <!-- Slides wrapper with overflow:hidden. -->
     <div class="pswp__scroll-wrap">
-        <!-- Container that holds slides.
+        <!-- Container that holds slides. 
             PhotoSwipe keeps only 3 of them in the DOM to save memory.
             Don't modify these 3 pswp__item elements, data is added later on. -->
         <div class="pswp__container">
@@ -160,7 +161,7 @@
                 </div>
             </div>
             <div class="pswp__share-modal pswp__share-modal--hidden pswp__single-tap">
-                <div class="pswp__share-tooltip"></div>
+                <div class="pswp__share-tooltip"></div> 
             </div>
             <button class="pswp__button pswp__button--arrow--left" title="Previous (arrow left)">
             </button>
