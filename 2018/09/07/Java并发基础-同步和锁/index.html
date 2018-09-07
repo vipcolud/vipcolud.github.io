@@ -1,0 +1,595 @@
+
+<!DOCTYPE html>
+<html lang="zh-Hans" class="loading">
+<head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+    <meta name="viewport" content="width=device-width, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>BELONG&#39;s Blog</title>
+
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="google" content="notranslate" />
+    <meta name="keywords" content="belongapp,"> 
+    <meta name="description" content="专注于后端开发,"> 
+    <meta name="author" content="BELONG"> 
+    <link rel="alternative" href="atom.xml" title="BELONG&#39;s Blog" type="application/atom+xml"> 
+    <link rel="icon" href="/img/favicon.png"> 
+    <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.css">
+    <link rel="stylesheet" href="/css/diaspora.css">
+
+</head>
+
+<body class="loading">
+    <div id="loader"></div>
+    <div id="single">
+    <div id="top" style="display: block;">
+    <div class="bar" style="width: 0;"></div>
+    <a class="icon-home image-icon" href="javascript:;"></a>
+    <div title="播放/暂停" class="icon-play"></div>
+    <h3 class="subtitle">java并发基础</h3>
+    <div class="social">
+        <!--<div class="like-icon">-->
+            <!--<a href="javascript:;" class="likeThis active"><span class="icon-like"></span><span class="count">76</span></a>-->
+        <!--</div>-->
+        <div>
+            <div class="share">
+                <a title="获取二维码" class="icon-scan" href="javascript:;"></a>
+            </div>
+            <div id="qr"></div>
+        </div>
+    </div>
+    <div class="scrollbar"></div>
+</div>
+    <div class="section">
+        <div class="article">
+    <div class='main'>
+        <h1 class="title">java并发基础</h1>
+        <div class="stuff">
+            <span>九月 07, 2018</span>
+            
+
+        </div>
+        <div class="content markdown">
+            <p>本系列文章主要讲解Java并发相关的内容，包括同步、锁、信号量、阻塞队列、线程池等，整体思维导图如下：<br><img src="http://pcxupmf8g.bkt.clouddn.com/concurrent2.png" alt="此处输入图片的描述"></p>
+<p>本文主要讲解Java内存模型、同步块、重入锁ReentrantLock和读写锁ReentrantReadWriteLock的应用及源码实现。<br>同步和锁<br>我们之所以要用多线程并发，是为了更好地利用服务器资源，使程序的响应速度更好。然而，如果多个线程访问了相同的资源，如同一内存区的变量、数组和对象，以及外部数据库或者文件等，可能导致程序的运行结果和我们预期的不一致。<br>假设你家庭成员都用同一个银行账户，每天都有收入或者支出，我们来看如下的代码：<br>package com.molyeo.java.concurrent;</p>
+<p>/**</p>
+<ul>
+<li><p>Created by zhangkh on 2018/8/24.<br>*/<br>public class SynchronizedDemo {<br> public static void main(String[] args){</p>
+<pre><code>Account account=new Account();
+account.setBalance(100000);
+System.out.printf(&quot;Account : Initial Balance: %f&quot;,account.getBalance());
+Spender spender=new Spender(account);
+Thread spenderThread=new Thread(spender);
+spenderThread.start();
+Earner earner=new Earner(account);
+Thread earnerThread=new Thread(earner);
+earnerThread.start();
+try {
+    spenderThread.join();
+    earnerThread.join();
+    System.out.printf(&quot;Account : Final Balance: %f&quot;,account.getBalance());
+} catch (InterruptedException e) {
+    e.printStackTrace();
+}
+</code></pre><p> }<br>}<br>SynchronizedDemo类先创建一个账户，然后将账户实例传递给Spender线程(每个月花钱的败家子)和Earner线程(挣钱养家的家庭成员)，然后启动这两个线程。<br>其中Account的代码如下：<br>public class Account{<br> private double balance;</p>
+<p> public double getBalance() {</p>
+<pre><code>return balance;
+</code></pre><p> }</p>
+<p> public void setBalance(double balance) {</p>
+<pre><code>this.balance = balance;
+</code></pre><p> }</p>
+<p> public void addAmount(double amount) {</p>
+<pre><code>try{
+    Thread.sleep(10);
+}catch (Exception e){
+    e.printStackTrace();
+}
+balance=balance+amount;
+</code></pre><p> }<br> public void subtractAmount(double amount){</p>
+<pre><code>try{
+    Thread.sleep(10);
+}catch (Exception e){
+    e.printStackTrace();
+}
+balance=balance-amount;
+</code></pre><p> }<br>}<br>Account拥有一个成员变量balance,用于记录账户余额，对外提供一个增加余额addAmount()和减少余额subtractAmount()的方法。<br>Spender和Earner代码如下：<br>class Spender implements Runnable {<br> private Account account;<br> public Spender(Account account) {</p>
+<pre><code>this.account=account;
+</code></pre><p> }<br> @Override<br> public void run() {</p>
+<pre><code>for (int i=0; i&lt;30; i++){
+    account.subtractAmount(1000);
+}
+</code></pre><p> }<br>}</p>
+</li>
+</ul>
+<p>class Earner implements Runnable{<br>    private Account account;<br>    public Earner(Account account) {<br>        this.account=account;<br>    }<br>    @Override<br>    public void run() {<br>        for (int i=0; i&lt;30; i++){<br>            account.addAmount(1000);<br>        }<br>    }<br>}<br>Spender线程每个月花钱30次，每次花1000人民币；Earner线程挣钱30次，每次挣1000人民币。<br>SynchronizedDemo程序中先设置账户余额为10万元，可以认为是家庭存款，按照预期的结果，这个月败家子花了3万，养家的爸妈一起挣了3万，这个月后结算，家里存款还是10万。虽然爸妈这个月白忙了，但是败家子还是先别内疚了，先看看程序的输出。<br>第一次运行输出结果如下(由于有一定的随机性，结果不一定完全相同)：<br>Account : Initial Balance: 100000.000000<br>Account : Final Balance: 99000.000000<br>第二次运行输出结果如下(由于有一定的随机性，结果不一定完全相同)：<br>Account : Initial Balance: 100000.000000<br>Account : Final Balance: 112000.000000<br>程序到底怎么了呢，好好地每次运行结果还不一致了？要深入分析这个问题，我们要先了解下Java的内存模型。<br>Java内存模型<br>Java内存模型规范了Java虚拟机和计算机内存的协同工作机制，简单的说就是说明了如何和何时可以看到由其他线程修改后的共享变量的值，以及在必须时如何同步地访问共享变量。<br>Java内存模型逻辑视图<br>Java内存模型把Java虚拟机划分为线程栈和堆。<br><img src="http://pcxupmf8g.bkt.clouddn.com/java-memory-model-1.png" alt="此处输入图片的描述"></p>
+<p>每个运行在Java虚拟机中的线程拥有自己的线程栈，包含线程调用的方法当前执行点相关的信息。同时一个线程也仅仅能访问自己的线程栈，线程创建的本地变量仅自己可见，其他线程不可见。<br>原始类型(boolean, byte, short, char, int, long, float, double)的本地变量都存放在线程栈上,而Java程序中创建的对象都存在在堆上，不管是自定义的自定义对象，还是原始类型的包装对象(如Byte, Integer, Long等)。下面这张图演示了调用栈和本地变量存放在线程栈上，对象存放在堆上。<br><img src="http://pcxupmf8g.bkt.clouddn.com/java-memory-model-2.png" alt="此处输入图片的描述"><br>变量到底是存放在线程栈上还是堆上，有如下几点说明：<br>本地变量如果是原始类型，则始终存在线程栈上<br>本地变量如果是对象的引用，则这个引用存在现在线程栈上，而对象存在堆上<br>一个对象的方法中的本地变量存在线程栈上，即使这个对象存放在堆上<br>对象的成员变量和对象本身一起存放在堆上，不管成员变量是原始类型还是引用类型<br>静态成员变量也是存放在堆上<br>存放在堆上的对象可以被所有持有对这个对象引用的线程访问。当一个线程可以访问一个对象时，它也可以访问这个对象的成员变量。如果两个线程同时调用同一个对象上的同一个方法，它们将会都访问这个对象的成员变量，但是每一个线程都拥有这个本地变量的私有拷贝。<br>硬件内存架构<br>现代硬件内存模型与Java内存模型有一些不同。理解内存模型架构以及Java内存模型如何与它协同工作也是非常重要的。<br>现代计算机硬件架构简单图示如下：<br><img src="http://pcxupmf8g.bkt.clouddn.com/java-memory-model-4.png" alt="此处输入图片的描述"><br>现代计算机通常由两个或者多个CPU组成,拥有寄存器，缓存，和主存，其中访问速度寄存器最高，缓存次之，再者就是主存。<br>通常情况下，当一个CPU需要读取主存时，它会将主存的部分读到CPU缓存中。它甚至可能将缓存中的部分内容读到它的内部寄存器中，然后在寄存器中执行操作。当CPU需要将结果写回到主存中去时，它会将内部寄存器的值刷新到缓存中，然后在某个时间点将值刷新回主存。<br>需要注意的是，当CPU需要在缓存层存放一些东西的时候，存放在缓存中的内容通常会被刷新回主存。CPU缓存可以在某一时刻将数据局部写到它的内存中，和在某一时刻局部刷新它的内存。它不会再某一时刻读/写整个缓存，通常是一个或者多个缓存行被读取或者写入。<br>硬件内存架构没有区分线程栈和堆。对于硬件，所有的线程栈和堆都分布在主内中。部分线程栈和堆可能有时候会出现在CPU缓存中和CPU内部的寄存器中。如下图所示：<br><img src="http://pcxupmf8g.bkt.clouddn.com/java-memory-model-5.png" alt="此处输入图片的描述"><br>当对象和变量被存放在计算机中各种不同的内存区域中时，就有可能会出现一些问题，主要包括两个方面：<br>共享变量修改的可见性<br>多线程读写共享变量时出现竞态条件<br>我们以上面的SynchronizedDemo例子，从硬件内存架构来分析这两个问题。<br>可见性<br>Account的成员变量balance被初始化为100000后，保存在主存中。Spender线程首次将这个共享对象读取到缓存后，调用subtractAmount()方法减少了balance的值。如果此时缓存数据没有被刷新到主存，则更改后的值对其他线程是不可见的。<br>而此时Earner线程也将共享对象拷贝到缓存中，注意此时的共享对象的值还是100000，然后调用addAmount()方法增加balance的值。这样两个线程多次更改后，导致最后balance的结果是不确定的，进而出现每次运行的结果可能不太一致。<br>为了解决共享变量的可见性问题，可以使用Java中的volatile关键字，其可以保证直接从主存中读取一个变量，如果这个变量被修改后，总是会被写到主存中去。<br>看到这里后，我们可以尝试对Account的成员变量balance使用volatile修饰，然后多次运行上述程序，看结果是否保持一致。<br>Account修改内容如下：<br>private  volatile double balance;<br>为了避免多次运行，我们在SynchronizedDemo的主程序中，直接循环10次：<br>public class SynchronizedDemo {<br>    public static void main(String[] args){<br>        for(int i=0;i&lt;10;i++){<br>            Account account = new Account();<br>            account.setBalance(100000);<br>            System.out.printf(“Account : Initial Balance: %s”,account.getBalance());<br>            Spender spender=new Spender(account);<br>            Thread spenderThread=new Thread(spender);<br>            spenderThread.start();<br>            Earner earner=new Earner(account);<br>            Thread earnerThread=new Thread(earner);<br>            earnerThread.start();<br>            try {<br>                spenderThread.join();<br>                earnerThread.join();<br>                System.out.printf(“Account : Final Balance: %s”,account.getBalance());<br>            } catch (InterruptedException e) {<br>                e.printStackTrace();<br>            }<br>            System.out.println(“——————————————————“);<br>        }<br>    }<br>}<br>让我们来见证奇迹的发生，看看程序的输出结果：<br>Account : Initial Balance: 100000.0</p>
+<h2 id="Account-Final-Balance-105000-0"><a href="#Account-Final-Balance-105000-0" class="headerlink" title="Account : Final Balance: 105000.0"></a>Account : Final Balance: 105000.0</h2><p>Account : Initial Balance: 100000.0</p>
+<h2 id="Account-Final-Balance-99000-0"><a href="#Account-Final-Balance-99000-0" class="headerlink" title="Account : Final Balance: 99000.0"></a>Account : Final Balance: 99000.0</h2><p>Account : Initial Balance: 100000.0</p>
+<h2 id="Account-Final-Balance-99000-0-1"><a href="#Account-Final-Balance-99000-0-1" class="headerlink" title="Account : Final Balance: 99000.0"></a>Account : Final Balance: 99000.0</h2><p>Account : Initial Balance: 100000.0</p>
+<h2 id="Account-Final-Balance-100000-0"><a href="#Account-Final-Balance-100000-0" class="headerlink" title="Account : Final Balance: 100000.0"></a>Account : Final Balance: 100000.0</h2><p>Account : Initial Balance: 100000.0</p>
+<h2 id="Account-Final-Balance-99000-0-2"><a href="#Account-Final-Balance-99000-0-2" class="headerlink" title="Account : Final Balance: 99000.0"></a>Account : Final Balance: 99000.0</h2><p>Account : Initial Balance: 100000.0</p>
+<h2 id="Account-Final-Balance-98000-0"><a href="#Account-Final-Balance-98000-0" class="headerlink" title="Account : Final Balance: 98000.0"></a>Account : Final Balance: 98000.0</h2><p>Account : Initial Balance: 100000.0</p>
+<h2 id="Account-Final-Balance-96000-0"><a href="#Account-Final-Balance-96000-0" class="headerlink" title="Account : Final Balance: 96000.0"></a>Account : Final Balance: 96000.0</h2><p>Account : Initial Balance: 100000.0</p>
+<h2 id="Account-Final-Balance-94000-0"><a href="#Account-Final-Balance-94000-0" class="headerlink" title="Account : Final Balance: 94000.0"></a>Account : Final Balance: 94000.0</h2><p>Account : Initial Balance: 100000.0</p>
+<h2 id="Account-Final-Balance-97000-0"><a href="#Account-Final-Balance-97000-0" class="headerlink" title="Account : Final Balance: 97000.0"></a>Account : Final Balance: 97000.0</h2><p>Account : Initial Balance: 100000.0</p>
+<h2 id="Account-Final-Balance-98000-0-1"><a href="#Account-Final-Balance-98000-0-1" class="headerlink" title="Account : Final Balance: 98000.0"></a>Account : Final Balance: 98000.0</h2><p>这是怎么回事呢，为什么每次运行的结果不完全一致呢，因为这里还涉及到操作原子性的问题。<br>原子性<br>所谓原子性，即一个操作或者多个操作要么全部执行并且执行的过程不会被任何因素打断，要么就都不执行。<br>我们来看Account中用于修改余额balance的两个方法：<br>public void addAmount(double amount) {<br>    try{<br>        Thread.sleep(10);<br>    }catch (Exception e){<br>        e.printStackTrace();<br>    }<br>    balance=balance+amount;<br>}<br>public void subtractAmount(double amount){<br>    try{<br>        Thread.sleep(10);<br>    }catch (Exception e){<br>        e.printStackTrace();<br>    }<br>    balance=balance-amount;<br>}<br>不管是addAmount还是subtractAmount方法对balance的操作都不具备原子性，其包括读取变量的原始值，进行加法或者减法的操作，然后写入工作内存。<br>假设Account初始值为100000，Earner线程先启动，读取了balance的原始值，还没有对balance进行修改前，这是线程被阻塞了。<br>然后Spender线程后启动，也读取了balance的值，由于该变量还没有被修改，故Spender线程的缓存还是有效的，然后进行减少amount(amount=1000)的操作,操作后balance的值为99000，将其写入工作内存，最后写入到主存。<br>然后Earner线程被激活了，虽然此时Spender线程对balance进行了修改，并使Earner线程中的缓存行无效，但由于Earner线程先前已经得到balance的值了,故balance的值还是先前的100000，继续进行相关的加法操作，操作后的最后balance值为101000，最后将结果写入到主存。此处涉及到Java语言的指令集架构，数据计算时基于栈的，有兴趣的可以去深入研究。<br>在Java中，只有基本数据类型的变量的读取和赋值是原子性操作的，即这些操作是不可中断的，要么执行，要么不执行。<br>如下对long型的balance赋值是原子性的：<br>balance=100000<br>但对balance进行算术运算则不是原子性的，因为其包括读取balance的值、加1000、写入新的值等三个操作。<br>balance=balance+1000<br>如果我们要实现更大范围操作的原子性，则需要通过synchronized和Lock来实现。同步块或者锁可以保证同一个时刻仅有一个线程可以进入代码的临界区，同时代码块中所有被访问的变量将会从主存中读入，退出同步块时，不管这个变量本身是否被声明为volatile,所有被更新的变量会被刷新到主存。<br>有了这些理论知识后，我们再看上面的示例如何修改，才能是最终的运行结果正确且完全一致。<br>我们只需要将要在多线程中访问的方法addAmount和subtractAmount声明为synchronized即可。由于synchronized能够保证唯一访问和修改后的数据刷新到主存，则成员变量balance是否被声明为volatile都无所谓了。我们看修改后的Account：<br>class Account {<br>    private double balance;</p>
+<pre><code>public double getBalance() {
+    return balance;
+}
+
+public void setBalance(double balance) {
+    this.balance = balance;
+}
+
+public synchronized void addAmount(double amount) {
+    try {
+        Thread.sleep(10);
+    } catch (Exception e) {
+        e.printStackTrace();
+    }
+    balance = balance + amount;
+}
+
+public synchronized void subtractAmount(double amount) {
+    try {
+        Thread.sleep(10);
+    } catch (Exception e) {
+        e.printStackTrace();
+    }
+    balance = balance - amount;
+}
+</code></pre><p>}<br>然后不管我们运行多少次，都可以看到最后balance的值都是100000。<br>同步块<br>Java中同步块主要用来标记方法或者代码块时同步的，同步在同一个对象上的同步块同一时刻只能被一个进程进入并执行相关操作，其他线程被阻塞，直到执行该同步块的线程退出。<br>Java中主要要四种不同的同步块：<br>实例方法<br>静态方法<br>实例方法中的同步块<br>静态方法中的同步块</p>
+<p>###实例方法同步<br>我们上面Account类中的两个方法就是实例方法上的同步(去掉线程睡眠的代码)：<br>public synchronized void addAmount(double amount) {<br>balance = balance + amount;<br>}<br>public synchronized void subtractAmount(double amount) {<br>balance = balance - amount;<br>}<br>Java实例方法同步是同步在拥有该方法的实例上的，只有一个线程能够在实例方法同步块中运行。如果有多个实例存在，则一个线程一次可以在一个实例同步块中执行操作，但是不同的线程针对不同的实例则是可以同时执行的。</p>
+<p>###实例方法中的同步<br>有时候不需要同步整个方法，而是方法中的一部分。我们将上面的addAmount()方法改写如下：<br>public void addAmount(double amount) {<br>synchronized (this){<br>balance = balance + amount;<br>}<br>}<br>public synchronized void subtractAmount(double amount) {<br>balance = balance - amount;<br>}<br>在上例中，使用了关键字this，即为调用addAmount方法的实例本身。在同步构造器中用括号括起来的对象叫做监视器对象。上述代码使用监视器对象同步，同步实例方法使用调用方法本身的实例作为监视器对象。<br>如果实例方法同步和实例方法中的同步，是针对同一个实例的话，则同一时刻只有一个线程在这两个同步块中的任意一个方法内执行。<br>静态方法同步<br>静态方法的同步是同步在该方法所在的类对象上的，因为JVM中一个类只能对应一个类对象，故同一时刻只允许一个线程执行同一个类中的静态同步方法。<br>静态方法中的同步块<br>静态方法中的同步块和静态方法作用类似，都是同步在类对象上。<br>下面的两个静态方法的同步块是不允许同时被线程访问的。<br>public synchronized  static void addAmount(double amount) {<br>        balance = balance + amount;<br>}</p>
+<p>public static void subtractAmount(double amount) {<br>    synchronized (Account.class){<br>        balance = balance - amount;<br>    }<br>}<br>线程安全<br>上面的章节中，我们深入探讨了线程同步以及同步块的多种形式，但是不是所有被多线程访问方法都需要同步呢？这就需要我们了解代码是到底是不是线程安全的。<br>所谓线程安全，是只允许被多个线程同时执行的代码，其不包含竞态条件。而多个线程同时更新共享资源时会引发竞态条件，因而需要知道Java线程执行时共享了什么资源。<br>局部变量<br>局部变量存储在线程栈中，即局部变量永远不会被多个线程共享，基础类型的局部变量是线程安全的。如下面的代码，即使多个线程调用，其结果总是返回固定值1。<br>public long fixedNumer(){<br>    long result=0;<br>    result++;<br>    return result;<br>}<br>局部的对象引用<br>局部的对象引用和局部变量不一样，虽然引用自身存在线程栈上，但是引用所值得对象存在共享堆中。<br>如果这个方法中创建的对象不能逃逸出该方法，即实例不能被别的线程获取到，也不会被非局部变量引用到，则其是线程安全的，否则不是线程安全的。<br>在下面的代码中，我们在makeAccountAndInit方法中新建Account对象，并赋值给account引用。由于account没有被方法makeAccountAndInit返回，也没有被其他的方法返回，故这里的引用account是线程安全的。<br>public void makeAccountAndInit(){<br>    Account account=new Account();<br>    initBalance(account);<br>}<br>public void initBalance(Account account){<br>    account.setBalance(100000);<br>}<br>但是如果account作为结果被返回，则其可以被其他线程获取到，则不是线程安全的。<br>成员变量<br>成员变量存储在堆上，如果多个线程同时更新同一个对象的同一个成员，则代码不是线程安全的。就如同我们最开始的SynchronizedDemo例子。<br>至于如何判断我们的代码是否是线程安全的，可以根据线程控制逃逸规则。<br>线程控制逃逸规则<br>如果一个资源的创建、使用、销毁都是在同一个线程内完成的，且永远不会脱离该线程的控制，则该资源的使用就是线程安全的。<br>资源可以是对象，数组，文件，数据库连接，套接字等等。Java中你无需主动销毁对象，所以“销毁”指不再有引用指向对象。<br>此外即使对象本身是线程安全的，但对象中如果包含其他资源，也会导致应用不是线程安全的。<br>如2个线程都创建了各自的数据库连接，每个连接自身是线程安全的，但是如果连接到同一个数据库，并且更新同一行记录，如update table set num=num+1 where id=10000;。可能最后的结果并没有增加2，而是只增加1`。<br>因而在实际编程时，一定要注意区分线程控制的对象是资源本身，还是只是资源的引用。<br>锁<br>Java中锁Lock和synchronized同步块一样，是一种线程同步机制,但提供了更灵活的结构,更细粒度的控制。</p>
+<p>###Lock和synchronized的区别<br>Lock实现类提供了细粒度的控制。synchronized方法或者语句提供了对每个对象相关的隐式监视器锁的访问，但是强制锁的获取和释放均要出现在一个块结构中。而Lock实现类允许锁在不同的作用范围内获取和释放，并允许以任何的顺序获取和释放多个锁。<br>Lock实现类提供了synchronized方法不包含的功能。如获取锁尝试、获取可中断的锁尝试、获得可超时锁的尝试<br>  //仅在调用时锁为空闲状态才获取该锁。<br>  boolean tryLock();</p>
+<p>  //如果当前线程未被中断，则获取锁。<br>  void lockInterruptibly() throws InterruptedException;</p>
+<p>  //如果锁在给定的等待时间内空闲，并且当前线程未被中断，则获取锁。<br>  boolean tryLock(long time, TimeUnit unit) throws InterruptedException;<br>Lock实现类提供了更丰富的语义。如保证排序、非重入用法或死锁检测等。<br>Lock使用示例<br>为了演示Lock的使用，我们使用Lock改写之前利用synchronized的SynchronizedDemo,新的程序代码如下：<br>package com.molyeo.java.concurrent;</p>
+<p>import java.util.concurrent.locks.Lock;<br>import java.util.concurrent.locks.ReentrantLock;</p>
+<p>/**</p>
+<ul>
+<li>Created by zhangkh on 2018/8/27.<br>*/<br>public class ReentrantLockDemo {<br> public static void main(String[] args) {<pre><code>for (int i = 0; i &lt; 10; i++) {
+    AccountWithLock account = new AccountWithLock();
+    account.setBalance(100000);
+    System.out.printf(&quot;Account : Initial Balance: %s&quot;, account.getBalance());
+    Spender spender = new Spender(account);
+    Thread spenderThread = new Thread(spender);
+    spenderThread.start();
+    Earner earner = new Earner(account);
+    Thread earnerThread = new Thread(earner);
+    earnerThread.start();
+    try {
+        spenderThread.join();
+        earnerThread.join();
+        System.out.printf(&quot;Account : Final Balance: %s&quot;, account.getBalance());
+    } catch (InterruptedException e) {
+        e.printStackTrace();
+    }
+    System.out.println(&quot;------------------------------------------------------&quot;);
+}
+</code></pre> }<br>}</li>
+</ul>
+<p>class AccountWithLock extends Account {<br>    private final Lock lock = new ReentrantLock();<br>    private double balance;</p>
+<pre><code>public double getBalance() {
+    return balance;
+}
+
+public void setBalance(double balance) {
+    this.balance = balance;
+}
+public void addAmount(double amount) {
+    try {
+        lock.lock();
+        balance = balance + amount;
+
+    } finally {
+        lock.unlock();
+    }
+}
+public void subtractAmount(double amount) {
+    try {
+        lock.lock();
+        balance = balance - amount;
+
+    } finally {
+        lock.unlock();
+    }
+}
+</code></pre><p>}<br>只需要改写Account类，将addAmount()方法和subtractAmount()中采用获取锁，然后操作balance变量，最后释放锁即可。<br>由于setBalance()方法并没有在多个线程中使用，故此处没有改写，实际应用中需要注意。<br>可以看到程序中使用的是Lock的实现类ReentrantLock，即可重入锁。<br>Lock的类图<br>Java中主要有Lock和ReadWriteLock(读写锁)这两个接口，其中Lock的实现有可重入锁ReentrantLock、以及ReentrantReadWriteLock(可重入读写锁)的两个子类ReadLock和WriteLock.<br>而接口ReaderWriteLock实现只有ReentrantReadWriteLock(可重入读写锁)。类图如下：<br><img src="http://pcxupmf8g.bkt.clouddn.com/Lock.jpg" alt="此处输入图片的描述"></p>
+<p>可重入锁<br>在上面的示例中我们在类AccountWithLock中使用可重入锁ReentrantLock实现了类似同步块的功能。<br>可以说可重入锁是java.util.concurrent包的基石，众多Java并发工具类将其作为成员变量，以解决多线程的资源共享问题。<br><img src="http://pcxupmf8g.bkt.clouddn.com/ReentrantLock.jpg" alt="此处输入图片的描述"></p>
+<p>源码实现<br>通过查看ReentrantLock的源码，会知道其有三个子类。一个抽象子类Sync，以及Sync的的两个具体类NonfairSync、FairSync。而Sync是又继承了AbstractQueuedSynchronizer。整体类图如下：<br><img src="http://pcxupmf8g.bkt.clouddn.com/ReentrantLock_AQS.jpg" alt="此处输入图片的描述"></p>
+<p>其中AbstractQueuedSynchronizer简称AQS,为实现依赖于先进先出 (FIFO) 等待队列的阻塞锁和相关同步器（信号量、事件，等等）提供一个框架。<br>AQS和CAS<br>AbstractQueuedSynchronizer(简称AQS)有一个成员变量state,<br>private volatile int state;<br>private transient volatile Node tail;<br>private transient volatile Node head;<br>由其子类去完成更改此状态的方法。<br>为了将AQS这个类作为同步器的基础，其子类要重新定义如下几个方法。<br>tryAcquire(int)<br>tryRelease(int)<br>tryAcquireShared(int)<br>tryReleaseShared(int)<br>isHeldExclusively()<br>而这5个方法主要是调用AQS的如下三个方法以原子方式去获取或者更新state值。<br>protected final int getState() {<br>    return state;<br>}<br>protected final void setState(int newState) {<br>    state = newState;<br>}<br>//如果当前状态值等于预期值，则以原子方式将同步状态设置为给定的更新值。<br>protected final boolean compareAndSetState(int expect, int update) {<br>    // See below for intrinsics setup to support this<br>    return unsafe.compareAndSwapInt(this, stateOffset, expect, update);<br>}<br>可以看到，从头到尾都没有synchronized关键字，没有使用java中任何锁的机制，而代码能保证多线程时具有线程安全性，所依靠的是Unsafe中的compareAndSwapInt方法。我们最开始提到过，在java中加减法操作不是原子性的，而compareAndSwapInt又是如何保证原子性的？<br>我们看一下Unsafe中这个方法的定义：<br>public final native boolean compareAndSwapInt(Object var1, long var2, int var4, int var5);<br>var2为变量的值<br>var4为预期的值<br>var5为更新的值<br>可以看到该方法是用native修饰的，即不是通过Java实现的，其借助C语言调用底层的CPU特殊指令实现的，即CAS(CompareAndSwap)指令。<br>CAS是一种系统原语，原语属于操作系统用语范畴，是由若干条指令组成的，用于完成某个功能的一个过程，并且原语的执行必须是连续的，在执行过程中不允许被中断，也就是说CAS是一条CPU的原子指令，不会造成所谓的数据不一致问题。<br>指令的操作过程如下：首先，CPU 会将内存中将要被更改的数据与期望的值做比较。当这两个值相等时，说明没有其他线程修改该值，当前线程可以修改，CPU 才会将内存中的数值替换为新的值。否则说明其他线程已经修改过，不执行更新操作，但可以选择重新读取变量值再尝试修改或者直接放弃操作。原理图如下：<br><img src="http://pcxupmf8g.bkt.clouddn.com/CAS.jpg" alt="此处输入图片的描述"><br>CAS虽然是很高效的解决原子操作，但也存在一些问题。<br>ABA问题。即值原来是A,然后变成B,又变成A,那么使用CAS检查是其值没有发生变化，但实际上值已经被修改过了。可以采用版本号解决该问题，如利用类AtomicStampedReference。<br>如果自旋CAS如果长时间不成功，循环时间开销大，会给CPU带来非常大的执行开销，此外程序测试相对复杂。<br>加锁<br>有CAS的基础知识后，了解了Lock原子性的实现，我们再来看ReentrantLock具体的代码。<br>默认情况下，创建的ReentrantLock是非公平锁<br>public ReentrantLock() {<br>    sync = new NonfairSync();<br>}<br>public ReentrantLock(boolean fair) {<br>    sync = fair ? new FairSync() : new NonfairSync();<br>}<br>公平锁中线程获取锁的顺序和调用lock的顺序医院，FIFO;但为了保证线程规规矩矩排队，需要增加阻塞和唤醒的时间开销，故基于性能考虑，默认情况是非公平锁。<br>在ReentrantLockDemo的例子中，如果Spender和Earner线程同时调用subtractAmount和addAmount方法，进而同时调用lock.lock()，即调用NonfairSync中的方法：<br>final void lock() {<br>    if (compareAndSetState(0, 1))<br>        setExclusiveOwnerThread(Thread.currentThread());<br>    else<br>        acquire(1);<br>}<br>则两个线程同时尝试去将AbstractQueuedSynchronizer类的state修改为1。如果Spender更改成功，compareAndSetState(0, 1)返回为true,则Spender线程获得该锁，完成后state修改为1，并setExclusiveOwnerThread将线程记录为独占锁的线程，然后执行了相关业务操作。<br>而失败的Earner线程执行acquire(1);<br>AbstractQueuedSynchronizer中acquire()代码如下：<br>public final void acquire(int arg) {<br>    if (!tryAcquire(arg) &amp;&amp;<br>        acquireQueued(addWaiter(Node.EXCLUSIVE), arg))<br>        selfInterrupt();<br>}<br>AQS的tryAcquire不能直接调用，因为是否获取锁成功是由子类决定的，直接看ReentrantLock中内部类NonfairSync的tryAcquire的实现。<br>protected final boolean tryAcquire(int acquires) {<br>    return nonfairTryAcquire(acquires);<br>}</p>
+<p>final boolean nonfairTryAcquire(int acquires) {<br>    final Thread current = Thread.currentThread();<br>    int c = getState();<br>    //首次获得<br>    if (c == 0) {<br>        if (compareAndSetState(0, acquires)) {<br>            setExclusiveOwnerThread(current);<br>            return true;<br>        }<br>    }<br>    //重入<br>    else if (current == getExclusiveOwnerThread()) {<br>        int nextc = c + acquires;<br>        if (nextc &lt; 0) // overflow<br>            throw new Error(“Maximum lock count exceeded”);<br>        setState(nextc);<br>        return true;<br>    }<br>    return false;<br>}<br>如果Spender线程获得该锁(包括重入)，通过CAS将state为1，返回为true。如果通过CAS抢占失败，也要去排队。执行acquireQueued(addWaiter(Node.EXCLUSIVE), arg)，加入等待队列中。加入前将线程封装成Node对象，Node主要有三个成员变量：<br>volatile Node prev;<br>volatile Node next;<br>volatile Thread thread;<br>每个Node维护了线程、前后Node的指针和等待状态等参数。Node需要标记是独占的还是共享的，由传入的mode决定，ReentrantLock自然是使用独占模式Node.EXCLUSIVE。<br>private Node addWaiter(Node mode) {<br>    Node node = new Node(Thread.currentThread(), mode);<br>    // Try the fast path of enq; backup to full enq on failure<br>    Node pred = tail;<br>    if (pred != null) {<br>        node.prev = pred;<br>        if (compareAndSetTail(pred, node)) {<br>            pred.next = node;<br>            return node;<br>        }<br>    }<br>    enq(node);<br>    return node;<br>}<br>如果队列为空，即pred为null,则调用enq(Node node)方法。否则将node包装完成后，调用compareAndSetTail将该node添加到队列最后。<br>private Node enq(final Node node) {<br>    for (;;) {<br>        Node t = tail;<br>        if (t == null) { // Must initialize<br>            if (compareAndSetHead(new Node()))<br>                tail = head;<br>        } else {<br>            node.prev = t;<br>            if (compareAndSetTail(t, node)) {<br>                t.next = node;<br>                return t;<br>            }<br>        }<br>    }<br>}<br>enq()方法中如果队列为空，先为head创建空node,然后调用compareAndSetHead方法设置到队列头部。后续调用compareAndSetTail将node设置为尾部。外部循环执行，直到设置成功。<br>线程加入队列后，下一步是调用acquireQueued阻塞线程。<br>final boolean acquireQueued(final Node node, int arg) {<br>    boolean failed = true;<br>    try {<br>        boolean interrupted = false;<br>        for (;;) {<br>            final Node p = node.predecessor();<br>            if (p == head &amp;&amp; tryAcquire(arg)) {<br>                setHead(node);<br>                p.next = null; // help GC<br>                failed = false;<br>                return interrupted;<br>            }<br>            if (shouldParkAfterFailedAcquire(p, node) &amp;&amp;<br>                parkAndCheckInterrupt())<br>                interrupted = true;<br>        }<br>    } finally {<br>        if (failed)<br>            cancelAcquire(node);<br>    }<br>}<br>其中方法shouldParkAfterFailedAcquire传入当前节点和前节点，根据前节点的状态，判断线程是否需要阻塞。<br>private static boolean shouldParkAfterFailedAcquire(Node pred, Node node) {<br>    int ws = pred.waitStatus;<br>    if (ws == Node.SIGNAL)<br>        return true;<br>    if (ws &gt; 0) {<br>        do {<br>            node.prev = pred = pred.prev;<br>        } while (pred.waitStatus &gt; 0);<br>        pred.next = node;<br>    } else {<br>        compareAndSetWaitStatus(pred, ws, Node.SIGNAL);<br>    }<br>    return false;<br>}<br>判断逻辑如下：<br>前节点状态是SIGNAL时，当前线程需要阻塞；<br>前节点状态是CANCELLED时，通过循环将当前节点之前所有取消状态的节点移出队列；<br>前节点状态是其他状态时，需要设置前节点为SIGNAL。<br>总结一下获取锁的过程：线程去竞争一个锁，可能成功也可能失败。成功就直接持有资源，不需要进入队列；失败的话进入队列阻塞，等待唤醒后再尝试竞争锁。<br>释放锁<br>释放锁的过程如下：先将state减1，再通知后面的节点获取锁。<br>public void unlock() {<br>sync.release(1);<br>}<br>release方法先调用tryRelease将state减1，直到为0时将独占线程变量设置为空。<br>public final boolean release(int arg) {<br>if (tryRelease(arg)) {<br>Node h = head;<br>if (h != null &amp;&amp; h.waitStatus != 0)<br>unparkSuccessor(h);<br>return true;<br>}<br>return false;<br>}<br>    protected final boolean tryRelease(int releases) {<br>        int c = getState() - releases;<br>        if (Thread.currentThread() != getExclusiveOwnerThread())<br>            throw new IllegalMonitorStateException();<br>        boolean free = false;<br>        if (c == 0) {<br>            free = true;<br>            setExclusiveOwnerThread(null);<br>        }<br>        setState(c);<br>        return free;<br>    }<br>设置成功后，调用unparkSuccessor将头节点的下个节点唤醒：<br>private void unparkSuccessor(Node node) {</p>
+<pre><code>int ws = node.waitStatus;
+if (ws &lt; 0)
+    compareAndSetWaitStatus(node, ws, 0);
+
+Node s = node.next;
+if (s == null || s.waitStatus &gt; 0) {
+    s = null;
+    for (Node t = tail; t != null &amp;&amp; t != node; t = t.prev)
+        if (t.waitStatus &lt;= 0)
+            s = t;
+}
+if (s != null)
+    LockSupport.unpark(s.thread);
+</code></pre><p>}<br>读写锁<br>基础属性<br>ReadWriteLock维护了一对相关的锁，一个用于只读操作，另一个用于写入操作。只要没有 writer，读取锁可以由多个 reader 线程同时保持。写入锁是独占的。<br>与互斥锁相比，读-写锁允许对共享数据进行更高级别的并发访问，尤其当数据的读取远大于数据的写入时。<br>读写锁的互斥机制：<br>“读-读” 不互斥<br>“读-写” 互斥<br>“写-写” 互斥<br>ReentrantReadWriteLock是ReentrantReadWriteLock的实现，该类具有以下属性：<br>获取顺序<br>非公平模式下，不指定读写锁的顺序，可能会推迟一个或者多个reader或者writer线程，但是吞吐量通常高于公平锁。<br>公平模式下，线程利用一个近似到达顺序的策略来争夺进入。当释放当前保持的锁时，可以为等待时间最长的单个 writer 线程分配写入锁，如果有一组等待时间大于所有正在等待的 writer 线程 的 reader 线程，将为该组分配写入锁。<br>重入<br>此锁允许 reader 和 writer 按照 ReentrantLock 的样式重新获取读取锁或写入锁。在写入线程保持的所有写入锁都已经释放后，才允许重入 reader 使用它们。<br>此外，writer 可以获取读取锁，但反过来则不成立。在其他应用程序中，当在调用或回调那些在读取锁状态下执行读取操作的方法期间保持写入锁时，重入很有用。如果 reader 试图获取写入锁，那么将永远不会获得成功。<br>锁降级<br>重入还允许从写入锁降级为读取锁，其实现方式是：先获取写入锁，然后获取读取锁，最后释放写入锁。但是，从读取锁升级到写入锁是不可能的。<br>中断<br>读取锁和写入锁都支持锁获取期间的中断。<br>Condition<br>写入锁提供了一个 Condition 实现，对于写入锁来说，该实现的行为与 ReentrantLock.newCondition() 提供的 Condition 实现对 ReentrantLock 所做的行为相同。当然，此 Condition 只能用于写入锁。<br>读取锁不支持 Condition，readLock().newCondition() 会抛出 UnsupportedOperationException。<br>使用示例<br>在我们在开始的账户余额管理例子中，针对的是一个账户进行更改，并且基本上都是修改操作。假设我们现在有不同用户的账户需要管理，同时有读取和修改操作，同时读取的线程数较多，这样我们则可以考虑用读写锁来实现。<br>在类WriteReadAccountMap中我们有一个成员变量balanceMap去存储不同账户的余额，同时有ReentrantReadWriteLock实例lock去负责读写时的并发控制：<br>class WriteReadAccountMap {<br>    Logger logger = LoggerFactory.getLogger(WriteReadAccountMap.class);<br>    private final ReentrantReadWriteLock lock = new ReentrantReadWriteLock();<br>    private final Lock readLock = lock.readLock();<br>    private final Lock writeLock = lock.writeLock();</p>
+<pre><code>private Map&lt;String, Double&gt; balanceMap = new TreeMap&lt;String, Double&gt;();
+
+public Double getBalance(String key) {
+    logger.info(&quot;{} get readLock&quot;, Thread.currentThread().getName());
+
+    readLock.lock();
+    try {
+        Double cacheValue = balanceMap.get(key);
+        if(cacheValue==null){
+            cacheValue=0D;
+        }
+        logger.info(&quot;{} cacheValue {}&quot;, Thread.currentThread().getName(), cacheValue);
+        return cacheValue;
+    } finally {
+        readLock.unlock();
+        logger.info(&quot;{} unlock readLock&quot;, Thread.currentThread().getName());
+
+    }
+}
+
+public Double setBalance(String key, Double value) {
+    writeLock.lock();
+    try {
+        return balanceMap.put(key, value);
+    } finally {
+        writeLock.unlock();
+    }
+}
+
+public Map getMap() {
+    readLock.lock();
+    try {
+        return balanceMap;
+    } finally {
+        readLock.unlock();
+    }
+}
+
+public void addAmount(String key, Double value) {
+    writeLock.lock();
+    logger.info(&quot;{} get writeLock&quot;, Thread.currentThread().getName());
+
+    readLock.lock();
+    logger.info(&quot;{} get readLock&quot;, Thread.currentThread().getName());
+
+    Double cacheValue = balanceMap.get(key);
+    if (cacheValue == null) {
+        cacheValue = 0D;
+    }
+    Double newValue = cacheValue + value;
+    logger.info(&quot;{} cacheValue={},add value={},newValue={}&quot;, Thread.currentThread().getName(), cacheValue, value, newValue);
+    readLock.unlock();
+    logger.info(&quot;{} unlock readLock&quot;, Thread.currentThread().getName());
+
+    balanceMap.put(key, newValue);
+    writeLock.unlock();
+    logger.info(&quot;{} unlock writeLock&quot;, Thread.currentThread().getName());
+
+}
+
+public void subtractAmount(String key, Double value) {
+    writeLock.lock();
+    readLock.lock();
+    Double cacheValue = balanceMap.get(key);
+    if (cacheValue == null) {
+        cacheValue = 0D;
+    }
+    Double newValue = cacheValue - value;
+    readLock.unlock();
+
+    balanceMap.put(key, newValue);
+    writeLock.unlock();
+}
+
+public void clear() {
+    writeLock.lock();
+    try {
+        balanceMap.clear();
+    } finally {
+        writeLock.unlock();
+    }
+}
+</code></pre><p>}<br>可以看到addAmount方法中由于我们要修改账户余额，我们先获得写锁，同时我们也有获得账户缓存余额，然后锁降级，在写锁释放前获得读锁，得到缓存值和新值相加的结果后，释放读锁，最后写入缓存Map，释放写锁。<br>读写线程很简单，Writer线程负责增加my账户的余额，Reader线程负责读取my账户的余额：<br>class Reader implements Runnable {<br>    Logger logger = LoggerFactory.getLogger(Reader.class);</p>
+<pre><code>private WriteReadAccountMap accountMap;
+
+public Reader(WriteReadAccountMap accountMap) {
+    this.accountMap = accountMap;
+}
+
+@Override
+public void run() {
+    Double accountMapBalance = accountMap.getBalance(&quot;my&quot;);
+}
+</code></pre><p>}</p>
+<p>class Writer implements Runnable {<br>    Logger logger = LoggerFactory.getLogger(Writer.class);</p>
+<pre><code>private WriteReadAccountMap accountMap;
+
+public Writer(WriteReadAccountMap accountMap) {
+    this.accountMap = accountMap;
+}
+
+@Override
+public void run() {
+    accountMap.addAmount(&quot;my&quot;, 10.0);
+}
+</code></pre><p>}<br>主程序创建10个Writer线程和30个Reader线程，去完成数据的读写，最后在main线程中获取my账户的余额。<br>public class ReentrantReadWriteLockDemo {<br>    static  Logger logger = LoggerFactory.getLogger(ReentrantReadWriteLockDemo.class);</p>
+<pre><code>public static void main(String[] args) throws InterruptedException {
+    WriteReadAccountMap account = new WriteReadAccountMap();
+    ExecutorService executorService = Executors.newFixedThreadPool(20);
+    for (int i = 0; i &lt; 10; i++) {
+        Writer writer = new Writer(account);
+        executorService.submit(writer);
+    }
+
+    for (int i = 0; i &lt; 30; i++) {
+        Reader reader = new Reader(account);
+        executorService.submit(reader);
+    }
+    Thread.sleep(5000);
+    executorService.shutdown();
+    logger.info(account.getBalance(&quot;my&quot;).toString());
+}
+</code></pre><p>}<br>程序部分运行结果如下：<br>18/08/29 14:21:39 INFO concurrent.WriteReadAccountMap: pool-1-thread-1 get writeLock<br>18/08/29 14:21:39 INFO concurrent.WriteReadAccountMap: pool-1-thread-1 get readLock<br>18/08/29 14:21:39 INFO concurrent.WriteReadAccountMap: pool-1-thread-11 get readLock<br>18/08/29 14:21:39 INFO concurrent.WriteReadAccountMap: pool-1-thread-12 get readLock<br>18/08/29 14:21:39 INFO concurrent.WriteReadAccountMap: pool-1-thread-13 get readLock<br>18/08/29 14:21:39 INFO concurrent.WriteReadAccountMap: pool-1-thread-1 cacheValue=0.0,add value=10.0,newValue=10.0<br>18/08/29 14:21:39 INFO concurrent.WriteReadAccountMap: pool-1-thread-1 unlock readLock<br>18/08/29 14:21:39 INFO concurrent.WriteReadAccountMap: pool-1-thread-1 unlock writeLock<br>18/08/29 14:21:39 INFO concurrent.WriteReadAccountMap: pool-1-thread-2 get writeLock<br>18/08/29 14:21:39 INFO concurrent.WriteReadAccountMap: pool-1-thread-1 get readLock<br>18/08/29 14:21:39 INFO concurrent.WriteReadAccountMap: pool-1-thread-2 get readLock<br>18/08/29 14:21:39 INFO concurrent.WriteReadAccountMap: pool-1-thread-2 cacheValue=10.0,add value=10.0,newValue=20.0<br>18/08/29 14:21:39 INFO concurrent.WriteReadAccountMap: pool-1-thread-2 unlock readLock<br>18/08/29 14:21:39 INFO concurrent.WriteReadAccountMap: pool-1-thread-2 unlock writeLock<br>18/08/29 14:21:39 INFO concurrent.WriteReadAccountMap: pool-1-thread-2 get readLock<br>18/08/29 14:21:39 INFO concurrent.WriteReadAccountMap: pool-1-thread-3 get writeLock<br>18/08/29 14:21:39 INFO concurrent.WriteReadAccountMap: pool-1-thread-3 get readLock<br>18/08/29 14:21:39 INFO concurrent.WriteReadAccountMap: pool-1-thread-3 cacheValue=20.0,add value=10.0,newValue=30.0<br>18/08/29 14:21:39 INFO concurrent.WriteReadAccountMap: pool-1-thread-3 unlock readLock<br>18/08/29 14:21:39 INFO concurrent.WriteReadAccountMap: pool-1-thread-3 unlock writeLock<br>18/08/29 14:21:39 INFO concurrent.WriteReadAccountMap: pool-1-thread-3 get readLock<br>18/08/29 14:21:39 INFO concurrent.WriteReadAccountMap: pool-1-thread-4 get writeLock<br>18/08/29 14:21:39 INFO concurrent.WriteReadAccountMap: pool-1-thread-4 get readLock<br>18/08/29 14:21:39 INFO concurrent.WriteReadAccountMap: pool-1-thread-4 cacheValue=30.0,add value=10.0,newValue=40.0<br>18/08/29 14:21:39 INFO concurrent.WriteReadAccountMap: pool-1-thread-4 unlock readLock<br>18/08/29 14:21:39 INFO concurrent.WriteReadAccountMap: pool-1-thread-4 unlock writeLock<br>18/08/29 14:21:39 INFO concurrent.WriteReadAccountMap: pool-1-thread-5 get writeLock<br>18/08/29 14:21:39 INFO concurrent.WriteReadAccountMap: pool-1-thread-5 get readLock<br>18/08/29 14:21:39 INFO concurrent.WriteReadAccountMap: pool-1-thread-5 cacheValue=40.0,add value=10.0,newValue=50.0<br>….<br>18/08/29 14:21:44 INFO concurrent.ReentrantReadWriteLockDemo: 100.0<br>从输出日志我们也能看到账户余额一次从0累加到100，符合我们的预期结果。<br>源码实现<br>下面简单我们分析一下ReentrantReadWriteLock的源码实现。<br>整体结构和锁状态维护<br>ReentrantReadWriteLock整体结构如下：<br><img src="http://pcxupmf8g.bkt.clouddn.com/ReadWriterStructure.jpg" alt="此处输入图片的描述"></p>
+<p>读写锁比ReentrantLock多出了两个内部类：ReadLock和WriteLock， 用来定义读锁和写锁，然后在构造函数中，会构造一个读锁和一个写锁实例保存到成员变量 readerLock 和 writerLock。<br>public ReentrantReadWriteLock() {<br>    this(false);<br>}<br>public ReentrantReadWriteLock(boolean fair) {<br>    sync = fair ? new FairSync() : new NonfairSync();<br>    readerLock = new ReadLock(this);<br>    writerLock = new WriteLock(this);<br>}<br>在互斥锁ReentrantLock中我们利用AQS中的state字段去维护锁的状态，但是读写锁ReentrantReadWriteLock也是利用AQS,而其是如何用一个变量去维护两个内部锁的状态的呢？<br>这里要看一下AQS的实现类Sync的定义，Sync有如下4个成员变量和两个静态方法：<br>static final int SHARED_SHIFT   = 16;<br>static final int SHARED_UNIT    = (1 &lt;&lt; SHARED_SHIFT);<br>static final int MAX_COUNT      = (1 &lt;&lt; SHARED_SHIFT) - 1;<br>static final int EXCLUSIVE_MASK = (1 &lt;&lt; SHARED_SHIFT) - 1;</p>
+<p>/<strong> Returns the number of shared holds represented in count  */<br>static int sharedCount(int c)    { return c &gt;&gt;&gt; SHARED_SHIFT; }<br>/</strong> Returns the number of exclusive holds represented in count  */<br>static int exclusiveCount(int c) { return c &amp; EXCLUSIVE_MASK; }<br>我们知道AQS中的state是int类型的，即32位的。<br>在读写锁中，读锁是共享的，写锁是独占的。从上面的读写锁用其高16位表示占用读锁的线程数，低16位表示写锁的状态。<br>获取共享锁数量时，调用sharedCount()方法，直接将state无符号右移16位，得到高16位的值。<br>获取独占锁数量时，调用exclusiveCount()方法，将其和65535(upper16=0000000000000000,lower16=1111111111111111)按位与运算后，高16位全部为0，后16位即state的低16位。<br>还不明白运算规则的可以用下面的这个例子去琢磨<br>package com.molyeo.java.concurrent;</p>
+<p>import org.apache.commons.lang3.StringUtils;<br>import org.slf4j.Logger;<br>import org.slf4j.LoggerFactory;</p>
+<p>/**</p>
+<ul>
+<li><p>Created by zhangkh on 2018/8/29.<br>*/<br>public class ShiftOperationsDemo {<br> static  Logger logger = LoggerFactory.getLogger(ShiftOperationsDemo.class);</p>
+<p> static final int SHARED_SHIFT   = 16;<br> static final int SHARED_UNIT    = (1 &lt;&lt; SHARED_SHIFT);<br> static final int MAX_COUNT      = (1 &lt;&lt; SHARED_SHIFT) - 1;<br> static final int EXCLUSIVE_MASK = (1 &lt;&lt; SHARED_SHIFT) - 1;<br> static int sharedCount(int c)    { return c &gt;&gt;&gt; SHARED_SHIFT; }<br> static int exclusiveCount(int c) { return c &amp; EXCLUSIVE_MASK; }</p>
+<p> public static void main(String[] args){</p>
+<pre><code>formatPrintInt(EXCLUSIVE_MASK);
+
+int state=851969;
+formatPrintInt(state);
+
+int sharedCount=sharedCount(state);
+logger.info(&quot;sharedCount={}&quot;,sharedCount);
+formatPrintInt(sharedCount);
+
+int exclusiveCount=exclusiveCount(state);
+logger.info(&quot;exclusiveCount={}&quot;,exclusiveCount);
+formatPrintInt(exclusiveCount);
+</code></pre><p> }</p>
+<p> public static void formatPrintInt(int num){</p>
+<pre><code>logger.info(&quot;num={},upper16={},lower16={}&quot;,num, StringUtils.leftPad(Integer.toBinaryString(num), 32, &quot;0&quot;).substring(0,16),StringUtils.leftPad(Integer.toBinaryString(num), 32, &quot;0&quot;).substring(16) );
+</code></pre><p> }<br>}<br>线程本地变量<br>继续看Sync代码下面的部分，可以看到4个成员变量，这几个变量的作用主要是将获取读锁的线程放入线程本地变量，方便从整个上下文根据当前线程获取持有锁的次数信息。<br>private transient ThreadLocalHoldCounter readHolds;<br>private transient HoldCounter cachedHoldCounter;<br>private transient Thread firstReader = null;<br>private transient int firstReaderHoldCount;<br>其中firstReader与firstReadHoldCount保存第一个获取读锁的线程的信息。<br>cachedHoldCounter用来缓存的是最后一个获取线程的HolderCount信息，该变量主要是在如果当前线程多次获取读锁时，减少从readHolds中获取HoldCounter的次数。<br>写锁的获取<br>写锁的获取通过调用WriteLock的lock()方法<br>public void lock() {<br>sync.acquire(1);<br>}<br>进而调用AbstractQueuedSynchronizer的acquire()方法<br>public final void acquire(int arg) {<br> if (!tryAcquire(arg) &amp;&amp;</p>
+<pre><code>acquireQueued(addWaiter(Node.EXCLUSIVE), arg))
+selfInterrupt();
+</code></pre><p>}<br>而tryAcquire()方法是由AQS的子类，即上面提到过的ReentrantReadWriteLock的内部Sync去实现<br>protected final boolean tryAcquire(int acquires) {<br> Thread current = Thread.currentThread();<br> int c = getState();<br> int w = exclusiveCount(c);<br> //1.即读锁或者写锁数量不为0<br> if (c != 0) {</p>
+<pre><code>/**
+*2.w=0即没有写锁，而state不为0，故读锁被占用
+*或者写锁被其他线程持有,返回false
+*/
+if (w == 0 || current != getExclusiveOwnerThread())
+    return false;
+//3.写锁计数将会越界，即大于65535，抛出异常，返回false
+if (w + exclusiveCount(acquires) &gt; MAX_COUNT)
+    throw new Error(&quot;Maximum lock count exceeded&quot;);
+//4.这里表示写锁不是0，并且当前线程持有锁，即重入，故修改写锁的数量即可
+setState(c + acquires);
+return true;
+</code></pre><p> }<br> //如果通过一次CAS去获取锁的时候失败，说明被别的线程占用，也返回false,排队去重试获取锁。<br> if (writerShouldBlock() ||</p>
+<pre><code>!compareAndSetState(c, c + acquires))
+return false;
+</code></pre><p> setExclusiveOwnerThread(current);<br> return true;<br>}<br>如果tryAcquire方法返回为true,则尝试获取锁方法结束。如果该方法返回false,则进入到acquireQueue方法去排队获取写锁，排队获取写锁的过程和ReentrantLock的获取过程一样。<br>通过写锁的获取过程，我们知道<br>如果当前没有写锁或者读锁，第一个获取锁的线程会获取成功不管是获得写锁还是读锁<br>如果当前已经有了读锁，则获取写锁会失败，而获取读锁有可能成功也可能失败<br>如果当前已经有了写锁，则如果写锁的持有者为当前线程，由于锁可重入，则获取读锁或者写锁可成功；反之如果写锁的持有者不是当前线程，则失败。<br>写锁的释放<br>释放锁要做的事情是将AQS中的state值进行修改，并唤醒队列中的等待线程来获取锁。<br>WriteLock通过调用unlock()方法<br>public void unlock() {<br> sync.release(1);<br>}<br>Sync中的release方法如下<br>public final boolean release(int arg) {<br> if (tryRelease(arg)) {</p>
+<pre><code>Node h = head;
+if (h != null &amp;&amp; h.waitStatus != 0)
+    unparkSuccessor(h);
+return true;
+</code></pre><p> }<br> return false;<br>}<br>Sync作为AQS的子类，自己要去实现tryRelease()方法<br>protected final boolean tryRelease(int releases) {<br> //如果写锁的持有者并非当前线程，抛出异常<br> if (!isHeldExclusively())</p>
+<pre><code>throw new IllegalMonitorStateException();
+</code></pre><p> int nextc = getState() - releases;<br> boolean free = exclusiveCount(nextc) == 0;<br> //如果释放锁后，写锁数据(state高16位)为0，则free返回为true,同时将AQS的写锁持有者线程置null，更改state的值。否则返回为false。<br> if (free)</p>
+<pre><code>setExclusiveOwnerThread(null);
+</code></pre><p> setState(nextc);<br> return free;<br>}<br>如果tryRelease方法成功释放锁，则需要调用unparkSuccessor()方法去唤醒等待队列中线程，并修改状态值。<br>private void unparkSuccessor(Node node) {<br> /*</p>
+<ul>
+<li>If status is negative (i.e., possibly needing signal) try</li>
+<li>to clear in anticipation of signalling.  It is OK if this</li>
+<li><p>fails or if status is changed by waiting thread.<br>*/<br>int ws = node.waitStatus;<br>if (ws &lt; 0)<br> compareAndSetWaitStatus(node, ws, 0);</p>
+<p>/*</p>
+</li>
+<li>Thread to unpark is held in successor, which is normally</li>
+<li>just the next node.  But if cancelled or apparently null,</li>
+<li>traverse backwards from tail to find the actual</li>
+<li>non-cancelled successor.<br>*/<br>Node s = node.next;<br>if (s == null || s.waitStatus &gt; 0) {<br> s = null;<br> for (Node t = tail; t != null &amp;&amp; t != node; t = t.prev)<pre><code>if (t.waitStatus &lt;= 0)
+    s = t;
+</code></pre>}<br>if (s != null)<br> LockSupport.unpark(s.thread);<br>}<br>可以看到仅当写锁的持有者为当前线程，并且释放锁后的写锁数据为0才认为成功释放写锁。<br>读锁的获取<br>读锁的获取过程比写锁相对复杂一些，使用读锁时，先调用ReadLock的lock()方法<br>public void lock() {<br>sync.acquireShared(1);<br>}<br>使用AQS的共享模式<br>public final void acquireShared(int arg) {<br>if (tryAcquireShared(arg) &lt; 0)<br> doAcquireShared(arg);<br>}<br>tryAcquireShared方法的实现还是在Sync中<br>protected final int tryAcquireShared(int unused) {<br>Thread current = Thread.currentThread();<br>int c = getState();<br>//如果写锁被其他线程持有，直接返回-1<br>if (exclusiveCount(c) != 0 &amp;&amp;<br> getExclusiveOwnerThread() != current)<br> return -1;<br>int r = sharedCount(c);<br>//读锁线程不需要阻塞，并且获取读锁的线程数没有超过最大值，并且使用 CAS更新共享锁线程数量成功，则设置线程本地变量信息，否则调用fullTryAcquireShared()方法<br>if (!readerShouldBlock() &amp;&amp;<br> r &lt; MAX_COUNT &amp;&amp;<br> compareAndSetState(c, c + SHARED_UNIT)) {<br> //r==0，表示当前线程为第一个获取读锁的线程，更新firstReader和firstReaderHoldCount<br> if (r == 0) {<pre><code>firstReader = current;
+firstReaderHoldCount = 1;
+</code></pre> //如果firstReader是当前线程，则更新firstReaderHoldCount，即读锁重入<br> } else if (firstReader == current) {<pre><code>firstReaderHoldCount++;
+</code></pre> //如果firstReader不是当前线程，则将该线程持有锁的次数信息放入线程本地变量中，方便整个请求上下文中使用<br> } else {<pre><code>HoldCounter rh = cachedHoldCounter;
+if (rh == null || rh.tid != getThreadId(current))
+    cachedHoldCounter = rh = readHolds.get();
+else if (rh.count == 0)
+    readHolds.set(rh);
+rh.count++;
+</code></pre> }<br> return 1;<br>}<br>return fullTryAcquireShared(current);<br>}<br>我们先看看fullTryAcquireShared方法<br>final int fullTryAcquireShared(Thread current) {<br>HoldCounter rh = null;<br>for (;;) {<br> int c = getState();<br> //如果当前线程不是写锁的持有者，返回-1，获取读锁失败。需要排队去申请读锁<br> if (exclusiveCount(c) != 0) {<pre><code>if (getExclusiveOwnerThread() != current)
+    return -1;
+// else we hold the exclusive lock; blocking here
+// would cause deadlock.
+</code></pre> //读线程需要阻塞，具体见readerShouldBlock的分析<br> } else if (readerShouldBlock()) {<pre><code>// Make sure we&apos;re not acquiring read lock reentrantly
+if (firstReader == current) {
+    // assert firstReaderHoldCount &gt; 0;
+} else {
+//读锁别其他线程占用，从readHolds中移除当前线程的持有数，返回-1，获取读锁失败。需要排队去申请读锁
+    if (rh == null) {
+        rh = cachedHoldCounter;
+        if (rh == null || rh.tid != getThreadId(current)) {
+            rh = readHolds.get();
+            if (rh.count == 0)
+                readHolds.remove();
+        }
+    }
+    if (rh.count == 0)
+        return -1;
+}
+</code></pre> }<br> if (sharedCount(c) == MAX_COUNT)<pre><code>throw new Error(&quot;Maximum lock count exceeded&quot;);
+</code></pre> //尝试获取锁成功的话则更新readHolds内部变量<br> if (compareAndSetState(c, c + SHARED_UNIT)) {<pre><code>if (sharedCount(c) == 0) {
+    firstReader = current;
+    firstReaderHoldCount = 1;
+} else if (firstReader == current) {
+    firstReaderHoldCount++;
+} else {
+    if (rh == null)
+        rh = cachedHoldCounter;
+    if (rh == null || rh.tid != getThreadId(current))
+        rh = readHolds.get();
+    else if (rh.count == 0)
+        readHolds.set(rh);
+    rh.count++;
+    cachedHoldCounter = rh; // cache for release
+}
+return 1;
+</code></pre> }<br>}<br>}<br>其中读锁或者是否需要阻塞，是区分公平锁和非公平锁的关键。以读锁为例，非公平锁NonfairSync的实现如下：<br>final boolean readerShouldBlock() {<br>return apparentlyFirstQueuedIsExclusive();<br>}<br>final boolean apparentlyFirstQueuedIsExclusive() {<br>Node h, s;<br>return (h = head) != null &amp;&amp;<br> (s = h.next)  != null &amp;&amp;<br> !s.isShared()         &amp;&amp;<br> s.thread != null;<br>}<br>公平锁的实现如下<br>final boolean writerShouldBlock() {<br>return hasQueuedPredecessors();<br>}<br>final boolean readerShouldBlock() {<br>return hasQueuedPredecessors();<br>}<br>public final boolean hasQueuedPredecessors() {<br>// The correctness of this depends on head being initialized<br>// before tail and on head.next being accurate if the current<br>// thread is first in queue.<br>Node t = tail; // Read fields in reverse initialization order<br>Node h = head;<br>Node s;<br>return h != t &amp;&amp;<br> ((s = h.next) == null || s.thread != Thread.currentThread());<br>}<br>对于公平锁，只要队列中有线程在等待，那么将会返回true，也就意味着读线程需要阻塞；对于非公平锁，如果当前线程持有写锁外，还有其他线程已经排队在申请写锁，则只能结束本次申请读锁的请求，转而去排队。这样处理，主要是避免写锁无限期的饥饿(avoid indefinite writer starvation)。<br>一旦不阻塞，那么读线程将会有机会获得读锁。<br>完成尝试获取锁步骤 tryAcquireShared 方法后，我们再次回到 acquireShared，如果返回1则读锁获取成功。如果返回-1,则需要排队申请,具体请看 doAcquireShared(arg)<br>private void doAcquireShared(int arg) {<br>//根据当前线程构建Node,并添加到队列尾部<br>final Node node = addWaiter(Node.SHARED);<br>boolean failed = true;<br>try {<br> boolean interrupted = false;<br> for (;;) {<pre><code>//获取节点的前置节点
+final Node p = node.predecessor();
+//如果前置节点是head时，再次尝试获取锁(因为head节点的初始化在第一次产生锁争用时初始化，刚开始初始化的head节点不代表线程，故可以再次尝试获取锁)。如果获取失败则进入到shouldParkAfterFailedAcquire和parkAndCheckInterrupt方法中，线程阻塞，等待被唤醒。
+if (p == head) {
+    int r = tryAcquireShared(arg);
+    if (r &gt;= 0) {
+        //如果锁获取成功，则设置head节点并传播
+        setHeadAndPropagate(node, r);
+        p.next = null; // help GC
+        if (interrupted)
+            selfInterrupt();
+        failed = false;
+        return;
+    }
+}
+if (shouldParkAfterFailedAcquire(p, node) &amp;&amp;
+    parkAndCheckInterrupt())
+    interrupted = true;
+</code></pre> }<br>} finally {<br> if (failed)<pre><code>cancelAcquire(node);
+</code></pre>}<br>}<br>所谓传播，只要获取成功到读锁，那就要传播到下一个节点。如果一下个节点继续是读锁的申请，只要成功获取，就再下一个节点，直到队列尾部或为写锁的申请，则停止传播。<br>private void setHeadAndPropagate(Node node, int propagate) {<br> Node h = head; // Record old head for check below<br> setHead(node);          //如果读锁获取成功，或头部节点为空，或头节点取消，或刚获取读锁的线程的下一个节点为空，或在节点的下个节点也在申请读锁，则在CLH队列中传播下去唤醒线程<br> if (propagate &gt; 0 || h == null || h.waitStatus &lt; 0 ||<pre><code>(h = head) == null || h.waitStatus &lt; 0) {
+Node s = node.next;
+if (s == null || s.isShared())
+    doReleaseShared();
+</code></pre> }<br>}<br>private void setHead(Node node) {<br>head = node;<br>node.thread = null;<br>node.prev = null;<br>}<br>private void doReleaseShared() {<br>for (;;) {<br> Node h = head;<br> if (h != null &amp;&amp; h != tail) {<pre><code>int ws = h.waitStatus;
+if (ws == Node.SIGNAL) {
+    if (!compareAndSetWaitStatus(h, Node.SIGNAL, 0))
+        continue;            // loop to recheck cases
+    unparkSuccessor(h);
+}
+else if (ws == 0 &amp;&amp;
+         !compareAndSetWaitStatus(h, 0, Node.PROPAGATE))
+    continue;                // loop on failed CAS
+</code></pre> }<br> if (h == head)                   // loop if head changed<pre><code>break;
+</code></pre>}<br>}<br>读锁的释放<br>读锁的释放比较简单，调用ReadLock的unlock方法，进而调用Sync的releaseShared方法<br>public void unlock() {<br> sync.releaseShared(1);<br>}<br>releaseShared方法主要是释放减少读锁state的值，直到完全释放后，进行doReleaseShared()操作。<br>public final boolean releaseShared(int arg) {<br>if (tryReleaseShared(arg)) {<br> doReleaseShared();<br> return true;<br>}<br>return false;<br>}<br>tryReleaseShared()方法如下<br>protected final boolean tryReleaseShared(int unused) {<br>Thread current = Thread.currentThread();<br>//主要是将当前线程所持有的锁的数量信息得到（从firstReader或cachedHoldCounter，或readHolds中获取 ），然后将数量减少1,如果持有数为1，则直接将该线程变量从readHolds ThreadLocal变量中移除，避免垃圾堆积。<br>if (firstReader == current) {<br> // assert firstReaderHoldCount &gt; 0;<br> if (firstReaderHoldCount == 1)<pre><code>firstReader = null;
+</code></pre> else<pre><code>firstReaderHoldCount--;
+</code></pre>} else {<br> HoldCounter rh = cachedHoldCounter;<br> if (rh == null || rh.tid != getThreadId(current))<pre><code>rh = readHolds.get();
+</code></pre> int count = rh.count;<br> if (count &lt;= 1) {<pre><code>readHolds.remove();
+if (count &lt;= 0)
+    throw unmatchedUnlockException();
+</code></pre> }<br> –rh.count;<br>}<br>//在无限循环中将共享锁的数量逐步减少，直到该读锁state为0(低16位)。释放完成后去执行doReleaseShared方法。<br>for (;;) {<br> int c = getState();<br> int nextc = c - SHARED_UNIT;<br> if (compareAndSetState(c, nextc))<pre><code>// Releasing the read lock has no effect on readers,
+// but it may allow waiting writers to proceed if
+// both read and write locks are now free.
+return nextc == 0;
+</code></pre>}<br>}<br>至此，ReentrantReadWriteLock锁的分析到此结束。<br>本文主要以一个账户余额管理的示例，引入锁的概念及相关实现，主要包括Java内存模型、同步块、重入锁ReentrantLock和读写锁ReentrantReadWriteLock的应用及源码实现。<br>本文参考<br>Java 7 Concurrency Cookbook<br>concurrency-modle-seven-week<br>java-concurrency<br>java-util-concurrent<br>java se 8 apidoc</li>
+</ul>
+</li>
+</ul>
+
+            <!--[if lt IE 9]><script>document.createElement('audio');</script><![endif]-->
+            <audio id="audio" loop="1" preload="auto" controls="controls" data-autoplay="false">
+                <source type="audio/mpeg" src="http://music.163.com/#/song?id=479598964">
+            </audio>
+        </div>
+        
+    <div id='gitalk-container' class="comment link"
+        data-ae='false'
+        data-ci='a396afe529734b15300f'
+        data-cs='0ae7c1790f9a5cbc2b7339c12a82d58fe58f9567'
+        data-r='vipcolud.github.io'
+        data-o='vipcolud'
+        data-a='vipcolud'
+        data-d='false'
+    >查看评论</div>
+
+
+    </div>
+    
+</div>
+
+
+    </div>
+</div>
+</body>
+<script src="//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+<script src="//lib.baomitu.com/jquery/1.8.3/jquery.min.js"></script>
+<script src="/js/plugin.js"></script>
+<script src="/js/diaspora.js"></script>
+<link rel="stylesheet" href="/photoswipe/photoswipe.css">
+<link rel="stylesheet" href="/photoswipe/default-skin/default-skin.css">
+<script src="/photoswipe/photoswipe.min.js"></script>
+<script src="/photoswipe/photoswipe-ui-default.min.js"></script>
+
+<!-- Root element of PhotoSwipe. Must have class pswp. -->
+<div class="pswp" tabindex="-1" role="dialog" aria-hidden="true">
+    <!-- Background of PhotoSwipe. 
+         It's a separate element as animating opacity is faster than rgba(). -->
+    <div class="pswp__bg"></div>
+    <!-- Slides wrapper with overflow:hidden. -->
+    <div class="pswp__scroll-wrap">
+        <!-- Container that holds slides. 
+            PhotoSwipe keeps only 3 of them in the DOM to save memory.
+            Don't modify these 3 pswp__item elements, data is added later on. -->
+        <div class="pswp__container">
+            <div class="pswp__item"></div>
+            <div class="pswp__item"></div>
+            <div class="pswp__item"></div>
+        </div>
+        <!-- Default (PhotoSwipeUI_Default) interface on top of sliding area. Can be changed. -->
+        <div class="pswp__ui pswp__ui--hidden">
+            <div class="pswp__top-bar">
+                <!--  Controls are self-explanatory. Order can be changed. -->
+                <div class="pswp__counter"></div>
+                <button class="pswp__button pswp__button--close" title="Close (Esc)"></button>
+                <button class="pswp__button pswp__button--share" title="Share"></button>
+                <button class="pswp__button pswp__button--fs" title="Toggle fullscreen"></button>
+                <button class="pswp__button pswp__button--zoom" title="Zoom in/out"></button>
+                <!-- Preloader demo http://codepen.io/dimsemenov/pen/yyBWoR -->
+                <!-- element will get class pswp__preloader--active when preloader is running -->
+                <div class="pswp__preloader">
+                    <div class="pswp__preloader__icn">
+                      <div class="pswp__preloader__cut">
+                        <div class="pswp__preloader__donut"></div>
+                      </div>
+                    </div>
+                </div>
+            </div>
+            <div class="pswp__share-modal pswp__share-modal--hidden pswp__single-tap">
+                <div class="pswp__share-tooltip"></div> 
+            </div>
+            <button class="pswp__button pswp__button--arrow--left" title="Previous (arrow left)">
+            </button>
+            <button class="pswp__button pswp__button--arrow--right" title="Next (arrow right)">
+            </button>
+            <div class="pswp__caption">
+                <div class="pswp__caption__center"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+<!-- Google Analytics -->
+<script type="text/javascript">
+  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+  })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+
+  ga('create', 'UA-69833742-2', 'auto');
+  ga('send', 'pageview');
+</script>
+<!-- End Google Analytics -->
+
+
+</html>
