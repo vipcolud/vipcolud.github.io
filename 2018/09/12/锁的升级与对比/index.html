@@ -1,0 +1,175 @@
+
+<!DOCTYPE html>
+<html lang="zh-Hans" class="loading">
+<head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+    <meta name="viewport" content="width=device-width, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>BELONG&#39;s Blog</title>
+
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="google" content="notranslate" />
+    <meta name="keywords" content="belongapp,"> 
+    <meta name="description" content="专注于后端开发,"> 
+    <meta name="author" content="BELONG"> 
+    <link rel="alternative" href="atom.xml" title="BELONG&#39;s Blog" type="application/atom+xml"> 
+    <link rel="icon" href="/img/favicon.png"> 
+    <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.css">
+    <link rel="stylesheet" href="/css/diaspora.css">
+
+</head>
+
+<body class="loading">
+    <div id="loader"></div>
+    <div id="single">
+    <div id="top" style="display: block;">
+    <div class="bar" style="width: 0;"></div>
+    <a class="icon-home image-icon" href="javascript:;"></a>
+    <div title="播放/暂停" class="icon-play"></div>
+    <h3 class="subtitle">java并发基础</h3>
+    <div class="social">
+        <!--<div class="like-icon">-->
+            <!--<a href="javascript:;" class="likeThis active"><span class="icon-like"></span><span class="count">76</span></a>-->
+        <!--</div>-->
+        <div>
+            <div class="share">
+                <a title="获取二维码" class="icon-scan" href="javascript:;"></a>
+            </div>
+            <div id="qr"></div>
+        </div>
+    </div>
+    <div class="scrollbar"></div>
+</div>
+    <div class="section">
+        <div class="article">
+    <div class='main'>
+        <h1 class="title">java并发基础</h1>
+        <div class="stuff">
+            <span>九月 12, 2018</span>
+            
+
+        </div>
+        <div class="content markdown">
+            <p>一. 背景</p>
+<p>Java SE1.6 为了减少获得锁和释放锁带来的性能消耗，引入了“偏向锁”和“轻量级”锁。</p>
+<p>(1).在Java SE 1.6 中，锁一共有4种状态，级别从低到高依次是：无锁状态、偏向锁状态、轻量级锁状态和重量级锁状态。这几个状态会随着竞争情况依次升级。</p>
+<p>(2).锁可以升级，但不能被降级，这意味着偏向锁升级为轻量级状态锁后不能降级成偏向锁。</p>
+<p>(3).这种锁升级但不能降级的策略目的是提高获得锁和释放锁的效率。</p>
+<ol>
+<li>偏向锁</li>
+</ol>
+<p>当一个线程访问同步快并获得锁时，会在对象头和栈帧的所记录存储锁偏向的线程id，以后该线程再次进出同步块是没就不需要进行CAS操作开加锁和解锁，只需简单的测试一下对象头的Mark Word里是否储存着指向当前线程的偏向锁。</p>
+<p>如果测试成功，表示线程已经获得了锁，如果测试失败则需再测试Mark Word中的偏向锁标志是否设置为1（表示当前是偏向锁）：</p>
+<ul>
+<li><p>是，则尝试使用CAS将对象头的偏向锁指向当前线程</p>
+</li>
+<li><p>否，则使用CAS竞争锁。<br>偏向锁的撤销<br>偏向锁使用了一种机制——等竞争出现时才释放锁的机制，所以当其他显示尝试竞争锁时，持有偏向锁的线程才会释放锁。偏向锁的撤销需要等待全局安全点（这个时间点上没有正在执行的字节码）。它会暂停拥有偏向锁的线程，然后检查持有偏向锁的线程是否存活，如果线程不处于活动状态，则将对象头设置为无锁状态；如果线程任然或者，拥有偏向锁的栈会被执行，遍历偏向对象的锁记录，栈中的锁记录和对象头的Mark Word要么偏向其他线程，要么恢复到无锁，或者标记对象不适合作为偏向锁，最后唤醒暂停的线程。</p>
+</li>
+</ul>
+<ol>
+<li>轻量级锁</li>
+</ol>
+<p>轻量级锁加锁<br>线程在执行同步块之前，JVM会先在当前线程的栈帧中创建用于存储锁记录的空间，并将对象头中的Mark Word复制到锁记录中，官方称为Displaced Mark Word。然后线程尝试使用CAS将对象头中的Mark Word替换为指向锁记录的指针。如果成功，当前线程获得锁，如果失败，表示其他线程竞争锁，当前线程便尝试使用自旋来获取锁。</p>
+<p>轻量级锁解锁</p>
+<p>轻量级锁解锁时，会使用原子的CAS操作将Displaced Mark Word替换到对象头，如果成功，则表示没有竞争发生，如果失败，表示当前锁存在竞争，锁就会膨胀成重量级锁。</p>
+<p>因为自旋会消耗CPU，为了避免无用的自旋（比如获得锁的线程被阻塞了），一旦线程升级成为重量级锁，就不会恢复到轻量级锁的状态。当锁处于这个状态，其他线程试图获取锁时，都会被阻塞。当持有锁的线程释放锁之后，会唤醒这些线程，被唤醒的线程就会进行新一轮的夺锁之争。<br>3.锁的优缺点对比<br>|  锁    |                    优点                                          |                 缺点                       | 适用场景<br>|偏向锁  |加锁和解锁不需要额外的消耗，和执行非同步方法相比仅存在纳秒级的差距|如果线程间存在竞争，会带来额外的锁撤销的消耗|适用与一个线程访问同步块场景<br>|轻量级锁|   竞争的锁不会阻塞，提高了程序的响应速度                         |如果始终得不到锁竞争的线程使用自旋会消耗Cpu |追求响应时间同步块执行速度非常快<br>|重量级锁|   线程竞争不使用自旋，不会消耗CPU                                |      线程阻塞，响应时间缓慢                |追求吞吐量同步块执行时间较长</p>
+
+            <!--[if lt IE 9]><script>document.createElement('audio');</script><![endif]-->
+            <audio id="audio" loop="1" preload="auto" controls="controls" data-autoplay="false">
+                <source type="audio/mpeg" src="http://music.163.com/#/song?id=479598964">
+            </audio>
+        </div>
+        
+    <div id='gitalk-container' class="comment link"
+        data-ae='false'
+        data-ci='a396afe529734b15300f'
+        data-cs='0ae7c1790f9a5cbc2b7339c12a82d58fe58f9567'
+        data-r='vipcolud.github.io'
+        data-o='vipcolud'
+        data-a='vipcolud'
+        data-d='false'
+    >查看评论</div>
+
+
+    </div>
+    
+</div>
+
+
+    </div>
+</div>
+</body>
+<script src="//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+<script src="//lib.baomitu.com/jquery/1.8.3/jquery.min.js"></script>
+<script src="/js/plugin.js"></script>
+<script src="/js/diaspora.js"></script>
+<link rel="stylesheet" href="/photoswipe/photoswipe.css">
+<link rel="stylesheet" href="/photoswipe/default-skin/default-skin.css">
+<script src="/photoswipe/photoswipe.min.js"></script>
+<script src="/photoswipe/photoswipe-ui-default.min.js"></script>
+
+<!-- Root element of PhotoSwipe. Must have class pswp. -->
+<div class="pswp" tabindex="-1" role="dialog" aria-hidden="true">
+    <!-- Background of PhotoSwipe. 
+         It's a separate element as animating opacity is faster than rgba(). -->
+    <div class="pswp__bg"></div>
+    <!-- Slides wrapper with overflow:hidden. -->
+    <div class="pswp__scroll-wrap">
+        <!-- Container that holds slides. 
+            PhotoSwipe keeps only 3 of them in the DOM to save memory.
+            Don't modify these 3 pswp__item elements, data is added later on. -->
+        <div class="pswp__container">
+            <div class="pswp__item"></div>
+            <div class="pswp__item"></div>
+            <div class="pswp__item"></div>
+        </div>
+        <!-- Default (PhotoSwipeUI_Default) interface on top of sliding area. Can be changed. -->
+        <div class="pswp__ui pswp__ui--hidden">
+            <div class="pswp__top-bar">
+                <!--  Controls are self-explanatory. Order can be changed. -->
+                <div class="pswp__counter"></div>
+                <button class="pswp__button pswp__button--close" title="Close (Esc)"></button>
+                <button class="pswp__button pswp__button--share" title="Share"></button>
+                <button class="pswp__button pswp__button--fs" title="Toggle fullscreen"></button>
+                <button class="pswp__button pswp__button--zoom" title="Zoom in/out"></button>
+                <!-- Preloader demo http://codepen.io/dimsemenov/pen/yyBWoR -->
+                <!-- element will get class pswp__preloader--active when preloader is running -->
+                <div class="pswp__preloader">
+                    <div class="pswp__preloader__icn">
+                      <div class="pswp__preloader__cut">
+                        <div class="pswp__preloader__donut"></div>
+                      </div>
+                    </div>
+                </div>
+            </div>
+            <div class="pswp__share-modal pswp__share-modal--hidden pswp__single-tap">
+                <div class="pswp__share-tooltip"></div> 
+            </div>
+            <button class="pswp__button pswp__button--arrow--left" title="Previous (arrow left)">
+            </button>
+            <button class="pswp__button pswp__button--arrow--right" title="Next (arrow right)">
+            </button>
+            <div class="pswp__caption">
+                <div class="pswp__caption__center"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+<!-- Google Analytics -->
+<script type="text/javascript">
+  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+  })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+
+  ga('create', 'UA-69833742-2', 'auto');
+  ga('send', 'pageview');
+</script>
+<!-- End Google Analytics -->
+
+
+</html>
