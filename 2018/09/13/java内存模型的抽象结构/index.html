@@ -27,7 +27,7 @@
     <div class="bar" style="width: 0;"></div>
     <a class="icon-home image-icon" href="javascript:;"></a>
     <div title="播放/暂停" class="icon-play"></div>
-    <h3 class="subtitle">锁的升级与对比</h3>
+    <h3 class="subtitle">java内存模型的抽象结构</h3>
     <div class="social">
         <!--<div class="like-icon">-->
             <!--<a href="javascript:;" class="likeThis active"><span class="icon-like"></span><span class="count">76</span></a>-->
@@ -44,38 +44,35 @@
     <div class="section">
         <div class="article">
     <div class='main'>
-        <h1 class="title">锁的升级与对比</h1>
+        <h1 class="title">java内存模型的抽象结构</h1>
         <div class="stuff">
-            <span>九月 12, 2018</span>
+            <span>九月 13, 2018</span>
             
 
         </div>
         <div class="content markdown">
-            <p>一. 背景</p>
-<p>Java SE1.6 为了减少获得锁和释放锁带来的性能消耗，引入了“偏向锁”和“轻量级”锁。</p>
-<p>(1).在Java SE 1.6 中，锁一共有4种状态，级别从低到高依次是：无锁状态、偏向锁状态、轻量级锁状态和重量级锁状态。这几个状态会随着竞争情况依次升级。</p>
-<p>(2).锁可以升级，但不能被降级，这意味着偏向锁升级为轻量级状态锁后不能降级成偏向锁。</p>
-<p>(3).这种锁升级但不能降级的策略目的是提高获得锁和释放锁的效率。</p>
-<ol>
-<li>偏向锁</li>
-</ol>
-<p>当一个线程访问同步快并获得锁时，会在对象头和栈帧的所记录存储锁偏向的线程id，以后该线程再次进出同步块是没就不需要进行CAS操作开加锁和解锁，只需简单的测试一下对象头的Mark Word里是否储存着指向当前线程的偏向锁。</p>
-<p>如果测试成功，表示线程已经获得了锁，如果测试失败则需再测试Mark Word中的偏向锁标志是否设置为1（表示当前是偏向锁）：</p>
-<ul>
-<li><p>是，则尝试使用CAS将对象头的偏向锁指向当前线程</p>
-</li>
-<li><p>否，则使用CAS竞争锁。<br>偏向锁的撤销<br>偏向锁使用了一种机制——等竞争出现时才释放锁的机制，所以当其他显示尝试竞争锁时，持有偏向锁的线程才会释放锁。偏向锁的撤销需要等待全局安全点（这个时间点上没有正在执行的字节码）。它会暂停拥有偏向锁的线程，然后检查持有偏向锁的线程是否存活，如果线程不处于活动状态，则将对象头设置为无锁状态；如果线程任然或者，拥有偏向锁的栈会被执行，遍历偏向对象的锁记录，栈中的锁记录和对象头的Mark Word要么偏向其他线程，要么恢复到无锁，或者标记对象不适合作为偏向锁，最后唤醒暂停的线程。</p>
-</li>
-</ul>
-<ol>
-<li>轻量级锁</li>
-</ol>
-<p>轻量级锁加锁<br>线程在执行同步块之前，JVM会先在当前线程的栈帧中创建用于存储锁记录的空间，并将对象头中的Mark Word复制到锁记录中，官方称为Displaced Mark Word。然后线程尝试使用CAS将对象头中的Mark Word替换为指向锁记录的指针。如果成功，当前线程获得锁，如果失败，表示其他线程竞争锁，当前线程便尝试使用自旋来获取锁。</p>
-<p>轻量级锁解锁</p>
-<p>轻量级锁解锁时，会使用原子的CAS操作将Displaced Mark Word替换到对象头，如果成功，则表示没有竞争发生，如果失败，表示当前锁存在竞争，锁就会膨胀成重量级锁。</p>
-<p>因为自旋会消耗CPU，为了避免无用的自旋（比如获得锁的线程被阻塞了），一旦线程升级成为重量级锁，就不会恢复到轻量级锁的状态。当锁处于这个状态，其他线程试图获取锁时，都会被阻塞。当持有锁的线程释放锁之后，会唤醒这些线程，被唤醒的线程就会进行新一轮的夺锁之争。<br>3.锁的优缺点对比<br><img src="https://upload-images.jianshu.io/upload_images/9252736-d05c6e30126341fd.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1000/format/webp" alt="此处输入图片的描述"></p>
-<p>通俗来讲就是：</p>
-<p>偏向锁：仅有一个线程进入临界区<br>轻量级锁：多个线程交替进入临界区<br>重量级锁：多个线程同时进入临界区</p>
+            <p>java并发采用的是共享内存模型，线程之间的通信对程序员来说是透明的，内存可见性问题很容易困扰着java程序员，今天我们就来揭开java内存模型的神秘面纱。</p>
+<p>在揭开面纱之前，我们需要认识几个基础概念：内存屏障（memory Barriers），指令重排序，happens-before规则，as-if-serial语义。</p>
+<p>什么是 Memory Barrier（内存屏障）？</p>
+<p>内存屏障，又称内存栅栏，是一个CPU指令，基本上它是一条这样的指令：<br>1、保证特定操作的执行顺序。<br>2、影响某些数据（或则是某条指令的执行结果）的内存可见性。<br>编译器和CPU能够重排序指令，保证最终相同的结果，尝试优化性能。插入一条Memory Barrier会告诉编译器和CPU：不管什么指令都不能和这条Memory Barrier指令重排序。</p>
+<p>Memory Barrier所做的另外一件事是强制刷出各种CPU cache，如一个 Write-Barrier（写入屏障）将刷出所有在 Barrier 之前写入 cache 的数据，因此，任何CPU上的线程都能读取到这些数据的最新版本。</p>
+<p><img src="https://upload-images.jianshu.io/upload_images/2184951-ad0094fa98e6cda0.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/220/format/webp" alt="此处输入图片的描述"><br>这和java有什么关系？volatile是基于Memory Barrier实现的。</p>
+<p>如果一个变量是volatile修饰的，JMM会在写入这个字段之后插进一个Write-Barrier指令，并在读这个字段之前插入一个Read-Barrier指令。</p>
+<p><img src="https://upload-images.jianshu.io/upload_images/2184951-6b466ec6493b0a4f.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/222/format/webp" alt="此处输入图片的描述"></p>
+<p>这意味着，如果写入一个volatile变量a，可以保证：<br>1、一个线程写入变量a后，任何线程访问该变量都会拿到最新值。<br>2、在写入变量a之前的写入操作，其更新的数据对于其他线程也是可见的。因为Memory Barrier会刷出cache中的所有先前的写入。</p>
+<p>happens-before</p>
+<p>从jdk5开始，java使用新的JSR-133内存模型，基于happens-before的概念来阐述操作之间的内存可见性。<br>在JMM中，如果一个操作的执行结果需要对另一个操作可见，那么这两个操作之间必须要存在happens-before关系，这个的两个操作既可以在同一个线程，也可以在不同的两个线程中。</p>
+<p>与程序员密切相关的happens-before规则如下：<br>1、程序顺序规则：一个线程中的每个操作，happens-before于该线程中任意的后续操作。<br>2、监视器锁规则：对一个锁的解锁操作，happens-before于随后对这个锁的加锁操作。<br>3、volatile域规则：对一个volatile域的写操作，happens-before于任意线程后续对这个volatile域的读。<br>4、传递性规则：如果 A happens-before B，且 B happens-before C，那么A happens-before C。</p>
+<p>注意：两个操作之间具有happens-before关系，并不意味前一个操作必须要在后一个操作之前执行！仅仅要求前一个操作的执行结果，对于后一个操作是可见的，且前一个操作按顺序排在后一个操作之前。</p>
+<p>指令重排序</p>
+<p>在执行程序时，为了提高性能，编译器和处理器会对指令做重排序。但是，JMM确保在不同的编译器和不同的处理器平台之上，通过插入特定类型的Memory Barrier来禁止特定类型的编译器重排序和处理器重排序，为上层提供一致的内存可见性保证。<br>1、编译器优化重排序：编译器在不改变单线程程序语义的前提下，可以重新安排语句的执行顺序。<br>2、指令级并行的重排序：如果不存l在数据依赖性，处理器可以改变语句对应机器指令的执行顺序。<br>3、内存系统的重排序：处理器使用缓存和读写缓冲区，这使得加载和存储操作看上去可能是在乱序执行。</p>
+<p>数据依赖性</p>
+<p>如果两个操作访问同一个变量，其中一个为写操作，此时这两个操作之间存在数据依赖性。<br>编译器和处理器不会改变存在数据依赖性关系的两个操作的执行顺序，即不会重排序。</p>
+<p>as-if-serial</p>
+<p>不管怎么重排序，单线程下的执行结果不能被改变，编译器、runtime和处理器都必须遵守as-if-serial语义。</p>
+<p>抽象结构</p>
+<p>java线程之间的通信由java内存模型（JMM）控制，JMM决定一个线程对共享变量（实例域、静态域和数组）的写入何时对其它线程可见。<br>从抽象的角度来看，JMM定义了线程和主内存Main Memory（堆内存）之间的抽象关系：线程之间的共享变量存储在主内存中，每个线程都有自己的本地内存Local Memory（只是一个抽象概念，物理上不存在），存储了该线程的共享变量副本。</p>
+<p>所以，线程A和线程B之前需要通信的话，必须经过一下两个步骤：<br>1、线程A把本地内存中更新过的共享变量刷新到主内存中。<br>2、线程B到主内存中读取线程A之前更新过的共享变量。</p>
 
             <!--[if lt IE 9]><script>document.createElement('audio');</script><![endif]-->
             <audio id="audio" loop="1" preload="auto" controls="controls" data-autoplay="false">
