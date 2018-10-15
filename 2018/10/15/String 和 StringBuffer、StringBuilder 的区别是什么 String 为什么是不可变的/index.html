@@ -37,7 +37,7 @@ var _hmt = _hmt || [];
     <div class="bar" style="width: 0;"></div>
     <a class="icon-home image-icon" href="javascript:;"></a>
     <div title="播放/暂停" class="icon-play"></div>
-    <h3 class="subtitle">hexo使用</h3>
+    <h3 class="subtitle">Hexo+diaspora+gittalk的Error：validation failed</h3>
     <div class="social">
         <!--<div class="like-icon">-->
             <!--<a href="javascript:;" class="likeThis active"><span class="icon-like"></span><span class="count">76</span></a>-->
@@ -54,45 +54,23 @@ var _hmt = _hmt || [];
     <div class="section">
         <div class="article">
     <div class='main'>
-        <h1 class="title">hexo使用</h1>
+        <h1 class="title">Hexo+diaspora+gittalk的Error：validation failed</h1>
         <div class="stuff">
-            <span>十二月 31, 2017</span>
+            <span>十月 15, 2018</span>
             
-  <ul class="post-tags-list"><li class="post-tags-list-item"><a class="post-tags-list-link" href="/tags/其他/">其他</a></li></ul>
-
 
         </div>
         <div class="content markdown">
-            <p>npm install hexo -g #安装<br>npm update hexo -g #升级<br>hexo init #初始化<br>简写<br>hexo n “我的博客” == hexo new “我的博客” #新建文章<br>hexo p == hexo publish<br>hexo g == hexo generate#生成<br>hexo s == hexo server #启动服务预览<br>hexo d == hexo deploy#部署</p>
-<p>服务器<br>hexo server #Hexo 会监视文件变动并自动更新，您无须重启服务器。<br>hexo server -s #静态模式<br>hexo server -p 5000 #更改端口<br>hexo server -i 192.168.1.1 #自定义 IP<br><a id="more"></a><br>hexo clean #清除缓存 网页正常情况下可以忽略此条命令<br>hexo g #生成静态网页<br>hexo d #开始部署</p>
-<p>监视文件变动<br>hexo generate #使用 Hexo 生成静态文件快速而且简单<br>hexo generate –watch #监视文件变动</p>
-<p>完成后部署<br>两个命令的作用是相同的<br>hexo generate –deploy<br>hexo deploy –generate<br>hexo deploy -g<br>hexo server -g</p>
-<p>草稿<br>hexo publish [layout] <title></title></p>
-<p>模版<br>hexo new “postName” #新建文章<br>hexo new page “pageName” #新建页面<br>hexo generate #生成静态页面至public目录<br>hexo server #开启预览访问端口（默认端口4000，’ctrl + c’关闭server）<br>hexo deploy #将.deploy目录部署到GitHub</p>
-<p>hexo new [layout] <title><br>hexo new photo “My Gallery”<br>hexo new “Hello World” –lang tw</title></p>
-<p>变量  描述<br>layout  布局<br>title   标题<br>date    文件建立日期<br>title: 使用Hexo搭建个人博客<br>layout: post<br>date: 2014-03-03 19:07:43<br>comments: true<br>categories: Blog<br>tags: [Hexo]<br>keywords: Hexo, Blog<br>description: 生命在于折腾，又把博客折腾到Hexo了。给Hexo点赞。<br>模版（Scaffold）<br>hexo new photo “My Gallery”</p>
-<p>变量  描述<br>layout  布局<br>title   标题<br>date    文件建立日期<br>设置文章摘要<br>以上是文章摘要 <!--more--> 以下是余下全文<br>写作<br>hexo new page <title><br>hexo new post <title></title></title></p>
-<p>变量  描述<br>:title  标题<br>:year   建立的年份（4 位数）<br>:month  建立的月份（2 位数）<br>:i_month    建立的月份（去掉开头的零）<br>:day    建立的日期（2 位数）<br>:i_day  建立的日期（去掉开头的零）<br>推送到服务器上<br>hexo n #写文章<br>hexo g #生成<br>hexo d #部署 #可与hexo g合并为 hexo d -g</p>
-<p>报错<br>1.找不到git部署<br>ERROR Deployer not found: git<br>解决方法</p>
-<p>npm install hexo-deployer-git –save</p>
-<p>3.部署类型设置git<br>hexo 3.0 部署类型不再是github，_config.yml 中修改</p>
-<h1 id="Deployment"><a href="#Deployment" class="headerlink" title="Deployment"></a>Deployment</h1><h2 id="Docs-http-hexo-io-docs-deployment-html"><a href="#Docs-http-hexo-io-docs-deployment-html" class="headerlink" title="Docs: http://hexo.io/docs/deployment.html"></a>Docs: <a href="http://hexo.io/docs/deployment.html" target="_blank" rel="external">http://hexo.io/docs/deployment.html</a></h2><p>deploy:<br>  type: git<br>  repository: git@<strong><em>.github.com:</em></strong>/<em>*</em>.github.io.git<br>  branch: master</p>
-<ol>
-<li>xcodebuild<br>xcode-select: error: tool ‘xcodebuild’ requires Xcode, but active developer directory ‘/Library/Developer/CommandLineTools’ is a command line tools instance</li>
-</ol>
-<p>npm install bcrypt</p>
-<ol>
-<li>RSS不显示<br>安装RSS插件</li>
-</ol>
-<p>npm install hexo-generator-feed –save</p>
-<p>开启RSS功能</p>
-<p>编辑hexo/_config.yml，添加如下代码：</p>
-<p>rss: /atom.xml #rss地址  默认即可<br>开启评论</p>
-<p>1.我使用多说代替自带的评论，在多说 网站注册 &gt; 后台管理 &gt; 添加新站点 &gt; 工具 === 复制通用代码 里面有 short_name</p>
-<p>在根目录 _config.yml 添加一行 disqus_shortname: jslite 是在多说注册时产生的<br>复制到 themes\landscape\layout_partial\article.ejs<br>把<br>&lt;% if (!index &amp;&amp; post.comments &amp;&amp; config.disqus_shortname){ %&gt;</p>
-<p><section id="comments"></section></p>
-<p><div id="disqus_thread"><br>  <noscript>Please enable JavaScript to view the <a href="//disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript><br></div><br><br>&lt;% } %&gt;<br>改为</p>
-<p>&lt;% if (!index &amp;&amp; post.comments &amp;&amp; config.disqus_shortname){ %&gt;<br>  <section id="comments"><br>    <!-- 多说评论框 start --><br>    <div class="ds-thread" data-thread-key="<%= post.layout %>-<%= post.slug %>" data-title="<%= post.title %>" data-url="<%= page.permalink %>"></div><br>    <!-- 多说评论框 end --><br>    <!-- 多说公共JS代码 start (一个网页只需插入一次) --><br>    <script type="text/javascript"><br>    var duoshuoQuery = {short_name:’&lt;%= config.disqus_shortname %&gt;’};<br>      (function() {<br>        var ds = document.createElement(‘script’);<br>        ds.type = ‘text/javascript’;ds.async = true;<br>        ds.src = (document.location.protocol == ‘https:’ ? ‘https:’ : ‘http:’) + ‘//static.duoshuo.com/embed.js’;<br>        ds.charset = ‘UTF-8’;<br>        (document.getElementsByTagName(‘head’)[0]<br>         || document.getElementsByTagName(‘body’)[0]).appendChild(ds);<br>      })();<br>      </script><br>    <!-- 多说公共JS代码 end --><br>  </section><br>&lt;% } %&gt;</p>
+            <p>可变性 　</p>
+<p>简单的来说：String 类中使用 final 关键字字符数组保存字符串，private　final　char　value[]，所以 String 对象是不可变的。而StringBuilder 与 StringBuffer 都继承自 AbstractStringBuilder 类，在 AbstractStringBuilder 中也是使用字符数组保存字符串char[]value 但是没有用 final 关键字修饰，所以这两种对象都是可变的。</p>
+<p>StringBuilder 与 StringBuffer 的构造方法都是调用父类构造方法也就是 AbstractStringBuilder 实现的，大家可以自行查阅源码。</p>
+<p>AbstractStringBuilder.java</p>
+<p>abstract class AbstractStringBuilder implements Appendable, CharSequence {<br>    char[] value;<br>    int count;<br>    AbstractStringBuilder() {<br>    }<br>    AbstractStringBuilder(int capacity) {<br>        value = new char[capacity];<br>    }<br>线程安全性</p>
+<p>String 中的对象是不可变的，也就可以理解为常量，线程安全。AbstractStringBuilder 是 StringBuilder 与 StringBuffer 的公共父类，定义了一些字符串的基本操作，如 expandCapacity、append、insert、indexOf 等公共方法。StringBuffer 对方法加了同步锁或者对调用的方法加了同步锁，所以是线程安全的。StringBuilder 并没有对方法进行加同步锁，所以是非线程安全的。 　　</p>
+<p>性能</p>
+<p>每次对 String 类型进行改变的时候，都会生成一个新的 String 对象，然后将指针指向新的 String 对象。StringBuffer 每次都会对 StringBuffer 对象本身进行操作，而不是生成新的对象并改变对象引用。相同情况下使用 StirngBuilder 相比使用 StringBuffer 仅能获得 10%~15% 左右的性能提升，但却要冒多线程不安全的风险。</p>
+<p>对于三者使用的总结：</p>
+<p>操作少量的数据 = String<br>单线程操作字符串缓冲区下操作大量数据 = StringBuilder<br>多线程操作字符串缓冲区下操作大量数据 = StringBuffer</p>
 
             <!--[if lt IE 9]><script>document.createElement('audio');</script><![endif]-->
             <audio id="audio" loop="1" preload="auto" controls="controls" data-autoplay="false">
