@@ -61,8 +61,7 @@ var _hmt = _hmt || [];
             
 
             <span id="busuanzi_container_page_pv">
-            本文总阅读量<span id="busuanzi_value_page_pv"></span>次
-            </span>
+            本文总阅读量<span id="busuanzi_value_page_pv"></span>次</span>
         </div>
         <div class="content markdown">
             <p>#node app<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div></pre></td><td class="code"><pre><div class="line">&apos;use strict&apos;</div><div class="line">//通过require将http库包含到程序中</div><div class="line">var http = require(&apos;http&apos;);</div><div class="line">//创建新的HTTP服务器</div><div class="line">var server = http.createServer();</div><div class="line">//通过request事件来响应request请求</div><div class="line">server.on(&apos;request&apos;,function(req, res)&#123;</div><div class="line">    res.writeHead(200, &#123;&apos;Content-Type&apos;:&apos;text/plain&apos;&#125;);</div><div class="line">    res.end(&apos;Hell World\n&apos;);</div><div class="line">&#125;);</div><div class="line">server.listen(&apos;80&apos;);  //监听端口</div><div class="line">console.log(&apos;Server running!&apos;);</div></pre></td></tr></table></figure></p>
