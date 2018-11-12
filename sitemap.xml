@@ -2,6 +2,13 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   
   <url>
+    <loc>www.belongapp.fun/2018/01/26/%E6%95%B0%E6%8D%AE%E5%BA%93%E7%B4%A2%E5%BC%95/</loc>
+    
+    <lastmod>2018-11-12T03:51:47.368Z</lastmod>
+    
+  </url>
+  
+  <url>
     <loc>www.belongapp.fun/2018/09/13/%E5%8E%9F%E5%AD%90%E6%93%8D%E4%BD%9C%E7%9A%84%E5%AE%9E%E7%8E%B0%E5%8E%9F%E7%90%86/</loc>
     
     <lastmod>2018-11-12T03:47:28.895Z</lastmod>
@@ -12,6 +19,20 @@
     <loc>www.belongapp.fun/2018/10/15/Hexo+gittalk%E7%9A%84Error%EF%BC%9Avalidation%20failed/</loc>
     
     <lastmod>2018-11-12T03:46:43.603Z</lastmod>
+    
+  </url>
+  
+  <url>
+    <loc>www.belongapp.fun/2018/10/19/%E6%94%AF%E4%BB%98%E5%AE%9D%E6%94%AF%E4%BB%98%E6%95%B4%E5%90%88%E5%88%B0spring+springmvc+mybatis%E7%8E%AF%E5%A2%83/</loc>
+    
+    <lastmod>2018-11-12T03:46:16.691Z</lastmod>
+    
+  </url>
+  
+  <url>
+    <loc>www.belongapp.fun/2017/10/10/%E6%88%91%E4%B8%80%E7%9B%B4%E5%9C%A8%E5%AF%BB%E6%89%BE/</loc>
+    
+    <lastmod>2018-11-12T03:41:04.637Z</lastmod>
     
   </url>
   
@@ -44,13 +65,6 @@
   </url>
   
   <url>
-    <loc>www.belongapp.fun/2018/10/19/%E6%94%AF%E4%BB%98%E5%AE%9D%E6%94%AF%E4%BB%98%E6%95%B4%E5%90%88%E5%88%B0spring+springmvc+mybatis%E7%8E%AF%E5%A2%83/</loc>
-    
-    <lastmod>2018-11-12T03:34:00.670Z</lastmod>
-    
-  </url>
-  
-  <url>
     <loc>www.belongapp.fun/2018/10/18/so%20far%20away/</loc>
     
     <lastmod>2018-11-12T03:33:42.736Z</lastmod>
@@ -75,13 +89,6 @@
     <loc>www.belongapp.fun/2018/09/12/%E9%94%81%E7%9A%84%E5%8D%87%E7%BA%A7%E4%B8%8E%E5%AF%B9%E6%AF%94/</loc>
     
     <lastmod>2018-11-12T03:21:33.804Z</lastmod>
-    
-  </url>
-  
-  <url>
-    <loc>www.belongapp.fun/2018/01/26/%E6%95%B0%E6%8D%AE%E5%BA%93%E7%B4%A2%E5%BC%95/</loc>
-    
-    <lastmod>2018-11-12T03:21:24.132Z</lastmod>
     
   </url>
   
@@ -117,13 +124,6 @@
     <loc>www.belongapp.fun/2017/10/12/spring-%E6%B7%B1%E5%85%A5%E7%90%86%E8%A7%A3-google-guice-%E4%BE%9D%E8%B5%96%E6%B3%A8%E5%85%A5/</loc>
     
     <lastmod>2018-07-04T09:48:25.672Z</lastmod>
-    
-  </url>
-  
-  <url>
-    <loc>www.belongapp.fun/2017/10/10/%E6%88%91%E4%B8%80%E7%9B%B4%E5%9C%A8%E5%AF%BB%E6%89%BE/</loc>
-    
-    <lastmod>2018-07-04T09:48:06.525Z</lastmod>
     
   </url>
   
