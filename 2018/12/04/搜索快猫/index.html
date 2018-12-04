@@ -33,96 +33,64 @@ var _hmt = _hmt || [];
 
 <body class="loading">
     <div id="loader"></div>
-    <div id="single" class="page">
-    <div id="top">
-        <a class="icon-left image-icon" href="javascript:history.back()"></a>
+    <div id="single">
+    <div id="top" style="display: block;">
+    <div class="bar" style="width: 0;"></div>
+    <a class="icon-home image-icon" href="javascript:;"></a>
+    <div title="播放/暂停" class="icon-play"></div>
+    <h3 class="subtitle">搜索快猫</h3>
+    <div class="social">
+        <!--<div class="like-icon">-->
+            <!--<a href="javascript:;" class="likeThis active"><span class="icon-like"></span><span class="count">76</span></a>-->
+        <!--</div>-->
+        <div>
+            <div class="share">
+                <a title="获取二维码" class="icon-scan" href="javascript:;"></a>
+            </div>
+            <div id="qr"></div>
+        </div>
     </div>
+    <div class="scrollbar"></div>
+</div>
     <div class="section">
         <div class="article">
-            <div class="main">
-                <div class="content">
-                    <!DOCTYPE html>
-<html lang="zh-CN">
+    <div class='main'>
+        <h1 class="title">搜索快猫</h1>
+        <div class="stuff">
+            <span>十二月 04, 2018</span>
+            
 
-<head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
-    <meta name="renderer" content="webkit">
-    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
-    <title>❤宝贝我爱你❤</title>
-    <style>
-        body {
-            -webkit-font-smoothing: antialiased;
-            font-family: Helvetica Neue, Helvetica, Hiragino Sans GB, Microsoft YaHei, Arial, sans-serif;
-            background-image: url('bg2.jpg');
-            font-size: 85%;
-            margin: 0;
-        }
-
-        h2 {
-            font-size: 220%;
-            font-weight: 400;
-        }
-
-        .content {
-            position: absolute;
-            width: 100%;
-            top: 40%;
-            transform: translate(0, -50%);
-            text-align: center;
-        }
-
-        .timer b {
-            color: rgb(253, 99, 125);
-            font-size: 181%;
-        }
-    </style>
-</head>
-
-<body>
-    <div class="content">
-        <h2>宝贝，我们在一起</h2>
-        <div class="timer">
-            <b id="d"></b> 天 <b id="h"></b> 小时 <b id="m"></b> 分钟 <b id="s"></b> 秒
+            <span id="busuanzi_container_page_pv">
+   本文总阅读量<span id="busuanzi_value_page_pv"></span>次
+</span>
         </div>
-    </div>
+        <div class="content markdown">
+            <p>www.km910.com  有你想要的</p>
 
-
-    <script>
-        function timer() {
-            var start = new Date(2018, 07, 01); // 2015.7.2
-            var t = new Date() - start;
-            console.log(new Date(2018, 08, 01))
-            var h = ~~(t / 1000 / 60 / 60 % 24);
-            if (h < 10) {
-                h = "0" + h;
-            }
-            var m = ~~(t / 1000 / 60 % 60);
-            if (m < 10) {
-                m = "0" + m;
-            }
-            var s = ~~(t / 1000 % 60);
-            if (s < 10) {
-                s = "0" + s;
-            }
-            document.getElementById('d').innerHTML = ~~(t / 1000 / 60 / 60 / 24);
-            document.getElementById('h').innerHTML = h;
-            document.getElementById('m').innerHTML = m;
-            document.getElementById('s').innerHTML = s;
-        }
-        timer();
-        setInterval(timer, 1000);
-    </script>
-</body>
-
-</html>
-                </div>
-            </div>
+            <!--[if lt IE 9]><script>document.createElement('audio');</script><![endif]-->
+            <audio id="audio" loop="1" preload="auto" controls="controls" data-autoplay="false">
+                <source type="audio/mpeg" src="https://music.163.com/#/song?id=299258">
+            </audio>
         </div>
+        
+    <div id='gitalk-container' class="comment link"
+        data-ae='true'
+        data-ci='c27524ff7fa274a5f47a'
+        data-cs='9ca2b17a9a49906b5f3ee758825c4d45a7e4ece4'
+        data-r='vipcolud.github.io'
+        data-o='vipcolud'
+        data-a='vipcolud'
+        data-d='false'
+    >查看评论</div>
+
+
     </div>
+    
 </div>
 
+
+    </div>
+</div>
 </body>
 <script src="//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
 <script src="//lib.baomitu.com/jquery/1.8.3/jquery.min.js"></script>
